@@ -1,6 +1,14 @@
 // 问题 2.5：找 bug。
 // 这个程序不报错，直接 FAIL（kernel 好像压根没跑。。。）
 // 任务：先定位到具体error（提示在文件末尾），再解释原因，并修好它。
+// GPU 型号            : NVIDIA GeForce RTX 5090
+// compute capability  : 12.0
+// SM 数量             : 170
+// warp 大小           : 32
+// shared mem / block  : 49152
+// max threads / SM    : 1536
+// global mem          : 33668857856
+// max threads / block : 1024
 #include "common.h"
 
 __global__ void vectorAdd(const float *a, const float *b, float *c, int n) {
@@ -28,9 +36,10 @@ int main() {
     CUDA_CHECK(cudaMemcpy(d_b, h_b, bytes, cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemset(d_c, 0, bytes));
 
-    int threads = 2048;
+    int threads = 1024;
     int blocks = (n + threads - 1) / threads;
     vectorAdd<<<blocks, threads>>>(d_a, d_b, d_c, n);
+    CUDA_CHECK_KERNEL();
     // 注意：这里故意没有做任何错误检查。
 
     CUDA_CHECK(cudaMemcpy(h_c, d_c, bytes, cudaMemcpyDeviceToHost));

@@ -18,6 +18,37 @@ contract: 实现 run(program) -> (regs, cycles)
 通过 pytest tests/test_simt_sim.py 即为完成。
 """
 
-
 def run(program):
-    raise NotImplementedError("从这里开始写")
+    regs = list(range(32))
+    cycle = 0
+    activeLn = range(32)
+    
+    def execute(program, activeLn):
+        nonlocal cycle
+        for inst in program:
+            op: str = inst[0]
+            if op == "add":
+                k = inst[1]
+                for i in activeLn:
+                    regs[i] += k
+                cycle += 1
+            elif op == "mul":
+                k = inst[1]
+                for i in activeLn:
+                    regs[i] *= k
+                cycle += 1
+            elif op == "if_lt":
+                _, t, then_prog, else_prog = inst
+                activeLn_checkpoint = activeLn
+                activeLn = [i for i in range(t) if i in activeLn_checkpoint]
+                if activeLn:
+                    execute(then_prog, activeLn)
+                activeLn = [i for i in range(t, 32) if i in activeLn_checkpoint]
+                if activeLn:
+                    execute(else_prog, activeLn)
+                activeLn = activeLn_checkpoint
+            else:
+                raise LookupError
+    execute(program, activeLn)
+    return regs, cycle
+    
