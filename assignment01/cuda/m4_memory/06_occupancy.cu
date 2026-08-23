@@ -46,10 +46,10 @@ int main() {
     // 1/x，每 SM 大致就只能驻留 x 个 block。下面六档挑得能在多数卡上落到
     // 六个不同的驻留块数，但实际落点还受架构影响（有的架构给每个 block
     // 额外保留一小块 shared），一切以 API 报出来的数为准。
-    const double fracs[] = {0.0, 0.132, 0.15, 0.18, 0.29, 0.55};
+    const double fracs[] = {0.0, 0.132, 0.15, 0.18, 0.29, 0.35, 0.43, 0.55};
     printf("%-14s %-16s %-11s %s\n",
            "shared/block", "理论 block/SM", "occupancy", "实测带宽");
-    for (int k = 0; k < 6; k++) {
+    for (int k = 0; k < 8; k++) {
         int smem = (int)(smem_sm * fracs[k]);
         if (smem > smem_blk_max) smem = smem_blk_max;
 

@@ -38,12 +38,106 @@
 
 #define BLOCK 256
 
-__global__ void reduce_interleaved(const float *in, float *out) {
+__global__ void reduce_shuffle(const float *in, float *out) {
     // TODO：从这里开始写（交错配对版本）
+    int tx = threadIdx.x;
+    int idx = blockIdx.x * blockDim.x + tx;
+    __shared__ float buf[BLOCK];
+    buf[tx] = in[idx];
+    __syncthreads();
+    for (int stride=1; stride<blockDim.x; stride<<=1){
+        if (tx % (2*stride) == 0){
+            buf[tx] += buf[tx + stride];
+        }
+        __syncthreads();
+    }
+    if (tx == 0) {
+        out[blockIdx.x] = buf[0];
+    }
 }
 
 __global__ void reduce_contiguous(const float *in, float *out) {
     // TODO：从这里开始写（连续配对版本）
+    int tx = threadIdx.x;
+    int idx = blockIdx.x * blockDim.x + tx;
+    __shared__ float buf[BLOCK];
+    buf[tx] = in[idx];
+    __syncthreads();
+    for (int stride=(blockDim.x >> 1); stride>=32; stride>>=1){
+        if (tx < stride){
+            buf[tx] += buf[tx + stride];
+        }
+        __syncthreads();
+        
+    }
+    float val = buf[tx];
+    #pragma unroll
+    for (int offset=16; offset>0; offset>>=1){
+        val += __shfl_down_sync(0xffffffff, val, offset);
+    }
+    if (tx==0){
+        out[blockIdx.x] = val;
+    }
+}
+
+__global__ void reduce_interleaved(const float *in, float *out) {
+
+    int tid = threadIdx.x;
+
+    int idx = blockIdx.x * blockDim.x + tid;
+
+    float val = in[idx];
+
+    // 1. 每个 warp 内部 reduction
+
+    // 32 个数 -> 1 个数，结果在每个 warp 的 lane 0
+
+    for (int offset = 16; offset > 0; offset >>= 1) {
+
+        val += __shfl_down_sync(0xffffffff, val, offset);
+
+    }
+
+    // 2. 每个 warp 的 lane 0 把结果写入 shared memory
+
+    // 256 threads = 8 warps
+
+    __shared__ float warp_sum[BLOCK / 32];
+
+    int lane = tid % 32;
+
+    int warp_id = tid / 32;
+
+    if (lane == 0) {
+
+        warp_sum[warp_id] = val;
+
+    }
+
+    __syncthreads();
+
+    // 3. 第一个 warp 负责归约 8 个 warp_sum
+
+    if (warp_id == 0) {
+
+        val = (lane < BLOCK / 32) ? warp_sum[lane] : 0.0f;
+
+        for (int offset = 16; offset > 0; offset >>= 1) {
+
+            val += __shfl_down_sync(0xffffffff, val, offset);
+
+        }
+
+        // 4. 最终结果
+
+        if (lane == 0) {
+
+            out[blockIdx.x] = val;
+
+        }
+
+    }
+
 }
 
 // ---------------- 以下是判测与计时，不要修改 ----------------

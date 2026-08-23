@@ -23,6 +23,83 @@ import torch
 import tilelang
 import tilelang.language as T
 
+def make_softmax(M, N, threads=128, dtype="float32"):
+    BLOCK_N = 1 << (N - 1).bit_length()
+    @T.prim_func
+    def main(
+        X: T.Tensor((M, N), dtype),
+        Y: T.Tensor((M, N), dtype),
+    ):
+        
+        with T.Kernel(M, threads=threads) as by:
+            X_local = T.alloc_fragment((N,), dtype)
+            max_local = T.alloc_fragment((1,), dtype)
+            sum_local = T.alloc_fragment((1,), dtype)
+            for j in T.Parallel(N):
+                X_local[j]=T.if_then_else(j<N, X[by, j], -T.infinity(dtype))
+            T.reduce_max(X_local, max_local)
+            for j in T.Parallel(N):
+                X_local[j] = T.exp(X_local[j]-max_local[0])
+            T.reduce_sum(X_local, sum_local)
+            for j in T.Parallel(N):
+                Y[by, j] = X_local[j] / sum_local[0]
+    return main
+
 
 def softmax(x: torch.Tensor) -> torch.Tensor:
-    raise NotImplementedError("从这里开始写")
+    M, N = x.shape
+    y = torch.zeros_like(x)
+    func = make_softmax(M, N)
+    kernel = tilelang.compile(func, out_idx=[1])
+    return kernel(x)
+
+
+def benchmark(M, N, warmup=20, repeat=100):
+    x = torch.randn(M, N, device="cuda", dtype=torch.float32)
+
+    # 先编译，不能把 TileLang compilation 算进 kernel latency
+    func = make_softmax(M, N)
+    kernel = tilelang.compile(func, out_idx=[1])
+
+    # warmup
+    for _ in range(warmup):
+        y = kernel(x)
+    torch.cuda.synchronize()
+
+    # TileLang
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+
+    start.record()
+    for _ in range(repeat):
+        y = kernel(x)
+    end.record()
+
+    torch.cuda.synchronize()
+
+    tilelang_ms = start.elapsed_time(end) / repeat
+
+    # PyTorch warmup
+    for _ in range(warmup):
+        y_ref = torch.softmax(x, dim=-1)
+    torch.cuda.synchronize()
+
+    # PyTorch
+    start.record()
+    for _ in range(repeat):
+        y_ref = torch.softmax(x, dim=-1)
+    end.record()
+
+    torch.cuda.synchronize()
+
+    torch_ms = start.elapsed_time(end) / repeat
+
+    print(
+        f"M={M:5d}, N={N:4d} | "
+        f"TileLang {tilelang_ms:.4f} ms | "
+        f"Torch {torch_ms:.4f} ms | "
+        f"speedup {torch_ms / tilelang_ms:.2f}x"
+    )
+
+for N in [256, 1024, 4096]:
+    benchmark(M=4096, N=N)
