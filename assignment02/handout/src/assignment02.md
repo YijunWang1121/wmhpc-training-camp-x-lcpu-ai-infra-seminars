@@ -58,6 +58,8 @@ make run/m0_env/01_first_mma
 
 在你能使用的 GPU 上分别运行该程序（5090 使用 ARCH=120a make ...，B300 使用默认配置）。尝试使用不匹配的 ARCH 编译运行一次，记录现象，并结合 assignment01 Module 8 中 fatbin/JIT 的内容解释原因。可使用 make ptx/m0_env/01_first_mma 查看生成的 PTX。
 
+- nvcc 编译成功，但程序运行时报告 cudaErrorNoKernelImageForDevice: no kernel image is available for execution on the device。这是因为 -gencode arch=compute_120a,code=sm_120a 生成并嵌入了面向 sm_120a 的 native kernel image，而 B300 无法执行该 image。同时该配置没有额外嵌入可供 CUDA Driver 针对当前 GPU JIT 编译的 PTX，因此运行时找不到适用于 B300 的 kernel image。
+
 ### 0.2 {.prob type=DERIVE}
 
 推导你所使用 GPU 的 Tensor Core 理论峰值。参考课上 A100 的推导方法（S018--S019），分别计算 5090 和 B300 的 bf16 峰值，并根据 dtype 宽度关系估算 fp8 / fp4 峰值。
@@ -83,14 +85,22 @@ make run/m0_env/01_first_mma
 (a) 一条 mma 的计算强度，分子是 $2MNK$，分母按 A、B 读入与 D 写回
 的字节总和计(S016 的口径)。
 
+- 对
+
 (b) mma.sync 是 warp 级协作指令:32 个 lane 各持 fragment 的一部分，
 要求全 warp 一致地执行这条指令；有 lane 发散时行为未定义。
+
+- 对
 
 (c) 增大 mma 的形状 M/N/K 能提高单条指令的计算强度，而且没有代价，
 所以指令形状越大越好。
 
+- 错，收到register数量，mma shape，数据通路限制
+
 (d) 只要单条 mma 的计算强度低于机器平衡点，GEMM kernel 就不可能逼近
 计算峰值。
+
+- 错，增加数据复用， tiling
 
 # sm80:fragment 与 mma.sync
 

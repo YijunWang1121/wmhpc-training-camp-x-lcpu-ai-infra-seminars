@@ -17,10 +17,36 @@
 #include <cstdint>
 
 // TODO: 实现四个函数。lane 0-31;A 的 i 0-15,B 的 i 0-7。
-static int a_row_of(int lane, int i) { (void)lane; (void)i; return 0; }
-static int a_col_of(int lane, int i) { (void)lane; (void)i; return 0; }
-static int b_row_of(int lane, int i) { (void)lane; (void)i; return 0; }  // k
-static int b_col_of(int lane, int i) { (void)lane; (void)i; return 0; }  // n
+static int a_row_of(int lane, int i) { 
+    int groupID = lane >> 2;
+    if ((0 <= i && i < 4) || (8 <= i && i < 12)){
+        return groupID;
+    }
+    else{
+        return groupID + 8;
+    }
+}
+static int a_col_of(int lane, int i) { 
+    int threadID_in_group = lane % 4;
+    if (i<8){
+        return (threadID_in_group * 4) + (i & 0x3);
+    }
+    else{
+        return (threadID_in_group * 4) + (i & 0x3) + 16;
+    }
+}
+static int b_row_of(int lane, int i) { 
+    int threadID_in_group = lane % 4;
+    if (i<4){
+        return (threadID_in_group * 4) + (i & 0x3)  ;
+    }
+    return (threadID_in_group * 4) + (i & 0x3) + 16;
+    
+}  // k
+static int b_col_of(int lane, int i) { 
+    int groupID = lane >> 2;
+    return groupID;
+}  // n
 
 // 以下为判测,不需要修改。表项 = row * 32 + col(A)/ k * 8 + n(B)。
 static const short A_POS[32 * 16] = {
