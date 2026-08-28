@@ -25,15 +25,24 @@
 // TODO (a):实现位域编码。
 static uint64_t make_desc(uint32_t saddr, uint32_t lbo, uint32_t sbo,
                           uint32_t layout) {
-    (void)saddr; (void)lbo; (void)sbo; (void)layout;
-    return 0;
+    uint64_t desc = 0;
+    desc |= (uint64_t)(saddr >> 4);         // bits [13:0]
+    desc |= (uint64_t)(lbo   >> 4) << 16;   // bits [29:16]
+    desc |= (uint64_t)(sbo   >> 4) << 32;   // bits [45:32]
+    desc |= (uint64_t)1 << 46;              // version
+    desc |= (uint64_t)layout << 61;         // bits [63:61]
+    return desc;
 }
-
 // TODO (b):三个场景的 {LBO 字节, SBO 字节, layout 编码}。
+//   场景 1:K-major,无 swizzle,tile 起始 smem 地址 0x1000。
+//           canonical 布局的 atom 是 8 行 x 16B 紧密打包(128B 连续),
+//           atom 沿 K、沿 MN 各按什么步距排,自己从布局推 LBO/SBO。
+//   场景 2:K-major,128B swizzle,起始地址 0x2000。
+//   场景 3:MN-major,128B swizzle,起始地址 0x3000。
 static const uint32_t SCEN[3][3] = {
-    {0, 0, 0},  // 场景 1
-    {0, 0, 0},  // 场景 2
-    {0, 0, 0},  // 场景 3
+    {128, 1024, 0},  // 场景 1
+    {0, 1024, 2},  // 场景 2
+    {0, 1024, 2},  // 场景 3
 };
 
 // 以下为判测,不需要修改。不匹配时按字段报差异,不打印期望值。
