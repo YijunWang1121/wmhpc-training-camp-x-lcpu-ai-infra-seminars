@@ -1,0 +1,17 @@
+/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/.venv/lib/python3.12/site-packages/triton/language/core.py:2625: UserWarning: tl.make_block_ptr is deprecated. Use TensorDescriptor or tl.make_tensor_descriptor instead.
+  warn("tl.make_block_ptr is deprecated. Use TensorDescriptor or tl.make_tensor_descriptor instead.")
+# baseline vs fused(num_warps,num_stages), CUDA-graph e2e us
+batch= 1 base= 10.24  best= 39.20 @ (4, 2)  speedup=0.26x
+   2w1s=86.5  2w2s=73.7  2w3s=73.7  2w4s=71.7  4w1s=55.3  4w2s=39.2  4w3s=41.0  4w4s=41.0  8w1s=59.4  8w2s=47.1  8w3s=47.1  8w4s=45.1
+batch= 2 base= 12.29  best= 40.94 @ (4, 2)  speedup=0.30x
+   2w1s=88.0  2w2s=73.7  2w3s=73.8  2w4s=71.7  4w1s=55.3  4w2s=40.9  4w3s=41.0  4w4s=41.0  8w1s=57.5  8w2s=47.1  8w3s=47.1  8w4s=45.1
+batch= 4 base= 12.33  best= 40.96 @ (4, 2)  speedup=0.30x
+   2w1s=87.7  2w2s=73.7  2w3s=73.8  2w4s=71.7  4w1s=55.3  4w2s=41.0  4w3s=41.0  4w4s=41.0  8w1s=59.4  8w2s=47.1  8w3s=47.1  8w4s=45.1
+batch= 8 base= 16.40  best= 40.95 @ (4, 2)  speedup=0.40x
+   2w1s=88.1  2w2s=73.7  2w3s=73.8  2w4s=71.7  4w1s=55.3  4w2s=40.9  4w3s=41.0  4w4s=41.0  8w1s=59.4  8w2s=47.1  8w3s=47.1  8w4s=45.1
+batch=16 base= 24.59  best= 44.88 @ (4, 2)  speedup=0.55x
+   2w1s=98.6  2w2s=77.7  2w3s=77.8  2w4s=75.8  4w1s=61.6  4w2s=44.9  4w3s=45.1  4w4s=45.1  8w1s=63.5  8w2s=51.2  8w3s=51.2  8w4s=49.2
+batch=32 base= 45.94  best= 54.32 @ (4, 2)  speedup=0.85x
+   2w1s=126.1  2w2s=87.9  2w3s=87.6  2w4s=86.1  4w1s=72.2  4w2s=54.3  4w3s=55.3  4w4s=55.3  8w1s=73.9  8w2s=61.4  8w3s=61.4  8w4s=59.5
+batch=64 base= 77.15  best= 71.25 @ (4, 4)  speedup=1.08x
+   2w1s=139.5  2w2s=135.4  2w3s=135.8  2w4s=136.6  4w1s=96.8  4w2s=72.4  4w3s=71.6  4w4s=71.2  8w1s=102.5  8w2s=78.9  8w3s=76.0  8w4s=114.2

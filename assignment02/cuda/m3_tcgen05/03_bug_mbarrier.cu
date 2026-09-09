@@ -53,6 +53,7 @@ __global__ void tcgen05_tile(const __nv_bfloat16* gA, const __nv_bfloat16* gB,
     __shared__ uint32_t s_taddr[1];
     int tid = threadIdx.x, warp = tid >> 5, lane = tid & 31;
     uint32_t mbar_u32 = (uint32_t)__cvta_generic_to_shared(&mbar);
+    uint32_t phase = 0;
 
     // (1) mbarrier 初始化 + TMEM 分配
     if (warp == 0) {
@@ -114,7 +115,8 @@ __global__ void tcgen05_tile(const __nv_bfloat16* gA, const __nv_bfloat16* gB,
                 ".shared::cluster.b64 [%0];" ::"r"(mbar_u32)
                 : "memory");
         }
-        mbar_wait(mbar_u32, 0);
+        mbar_wait(mbar_u32, phase);
+        phase ^= 1;
         asm volatile("tcgen05.fence::after_thread_sync;");
         for (int c = 0; c < N; c += 8) {
             uint32_t src = taddr + ((uint32_t)(warp * 32) << 16) + c;

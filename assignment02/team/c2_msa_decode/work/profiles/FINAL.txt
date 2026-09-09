@@ -1,0 +1,42 @@
+# ===== C2 final consolidated run =====
+Wed Sep  9 10:36:03 UTC 2026
+
+## correctness (fused v1: 11 shapes x 5 seeds, vs SDPA <2e-2, vs baseline <5e-3)
+shape                seed     vs SDPA  vs baseline  verdict
+b1 seq8192             5x    2.57e-03     3.53e-03  PASS
+b2 seq8192             5x    2.59e-03     3.48e-03  PASS
+b4 seq8192             5x    2.55e-03     3.46e-03  PASS
+b8 seq8192             5x    2.58e-03     3.39e-03  PASS
+b16 seq8192            5x    2.58e-03     3.28e-03  PASS
+b4 mixed 1k-8k         5x    2.60e-03     3.50e-03  PASS
+b3 short 50-300        5x    2.59e-03     2.93e-03  PASS
+b2 dql2                5x    2.57e-03     3.49e-03  PASS
+b2 dql4                5x    2.57e-03     3.39e-03  PASS
+b3 exact 128k          5x    2.62e-03     3.51e-03  PASS
+b3 128k+1              5x    2.59e-03     3.54e-03  PASS
+
+ALL PASS
+
+## CUDA-graph e2e sweep: baseline vs fused-v1(4w,3s)
+ batch  base_e2e_us  fused_e2e_us  speedup
+     1        10.25         40.97    0.25x
+     2        10.25         40.98    0.25x
+     4        12.54         40.99    0.31x
+     8        18.41         41.32    0.45x
+    16        24.61         45.05    0.55x
+    32        46.68         55.58    0.84x
+    64        78.17         71.97    1.09x
+
+## nsys pure-GPU kernel time (baseline decode + merge), eager
+-- batch 1 --
+     67.5           189216         30    6307.2    6384.0      5984      8032        390.5  _gqa_sparse_decode_kernel  
+     32.5            90976         30    3032.5    3040.0      2944      3104         63.8  _merge_topk_attn_out_kernel
+-- batch 4 --
+     71.5           257443         30    8581.4    8512.0      8288      9888        316.3  _gqa_sparse_decode_kernel  
+     28.5           102368         30    3412.3    3424.0      3296      3520         65.4  _merge_topk_attn_out_kernel
+-- batch 8 --
+     76.1           361666         30   12055.5   11952.0     11648     14432        540.9  _gqa_sparse_decode_kernel  
+     23.9           113441         30    3781.4    3776.0      3680      3936         64.6  _merge_topk_attn_out_kernel
+-- batch 16 --
+     84.2           584006         30   19466.9   19312.5     19040     22945        690.3  _gqa_sparse_decode_kernel  
+     15.8           109440         30    3648.0    3648.0      3584      3776         44.5  _merge_topk_attn_out_kernel

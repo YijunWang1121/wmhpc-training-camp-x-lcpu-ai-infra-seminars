@@ -116,32 +116,32 @@
 (a) `tcgen05.ld` 读取 TMEM 时,每个 warp 只能读取自己对应的 32 条 lane,
 warp 之间不能互相读取。
 
-> 对/错:
-> 理由:
+> 对/错:错
+> 理由:warp只能读取lane 32i-32i+31.
 
 (b) 与 `mma.sync` 由 warp 协作、wgmma 由 warpgroup 协作不同,`tcgen05.mma`
 由单个线程发射,随后由硬件异步执行。
 
-> 对/错:
+> 对/错:对
 > 理由:
 
 (c) TMEM 中的累加结果可以直接通过 TMA 搬回 global memory,不需要经过
 寄存器。
 
-> 对/错:
-> 理由:
+> 对/错:错
+> 理由:要经过register先
 
 (d) TMEM 每个 SM 包含 128 lane × 512 column × 4 B;一个 m128n256 的 f32
 accumulator 恰好占用其中一半。(需要写出计算过程)
 
-> 对/错:
-> 计算过程:
+> 对/错:对
+> 计算过程:128×256×4刚好为一半
 
 (e) `tcgen05.commit` 会阻塞直到之前发射的 mma 全部完成,因此 commit 返回
 后即可安全读取 TMEM。
 
-> 对/错:
-> 理由:
+> 对/错:错
+> 理由:还要等mbarrier
 
 ---
 

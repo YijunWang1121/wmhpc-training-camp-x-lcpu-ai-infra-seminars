@@ -1,0 +1,14 @@
+shape                seed     vs SDPA  vs baseline  verdict
+b1 seq8192             5x    2.57e-03     3.53e-03  PASS
+b2 seq8192             5x    2.59e-03     3.48e-03  PASS
+b4 seq8192             5x    2.55e-03     3.46e-03  PASS
+b8 seq8192             5x    2.58e-03     3.39e-03  PASS
+b16 seq8192            5x    2.58e-03     3.28e-03  PASS
+b4 mixed 1k-8k         5x    2.60e-03     3.50e-03  PASS
+b3 short 50-300        5x    2.59e-03     2.93e-03  PASS
+b2 dql2                5x    2.57e-03     3.49e-03  PASS
+b2 dql4                5x    2.57e-03     3.39e-03  PASS
+b3 exact 128k          5x    2.62e-03     3.51e-03  PASS
+b3 128k+1              5x    2.59e-03     3.54e-03  PASS
+
+ALL PASS

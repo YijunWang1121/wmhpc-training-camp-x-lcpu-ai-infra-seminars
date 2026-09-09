@@ -1,0 +1,6 @@
+Generating SQLite file profiles/nsys_b8.sqlite from profiles/nsys_b8.nsys-rep
+Processing [profiles/nsys_b8.sqlite] with [/opt/nvidia/nsight-systems/2025.3.2/host-linux-x64/reports/cuda_gpu_kern_sum.py]... 
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+74.8,220548,30,7351.6,7264.0,7168,9376,393.2,_gqa_sparse_decode_kernel
+25.2,74112,30,2470.4,2464.0,2368,2560,59.7,_merge_topk_attn_out_kernel
+
