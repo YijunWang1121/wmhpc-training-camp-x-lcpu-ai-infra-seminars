@@ -152,3 +152,70 @@ harness 三组 check 全 PASS(err_ratio 3.2e-3 / 2.8e-3 / 3.2e-3)。
 计时(graph,us):b=1 bf16 8.3 / fp8 无 scale 11.0 / fp8 标量 11.8 / fp8 per-token 12.5;b=8:14.9 / 19.8 / 24.2 / 21.7。
 → 上游 Triton 的 fp8 路径比 bf16 **慢 30–60%**:省的是带宽(小 batch 根本不缺),付的是 fp8→bf16 转换 + 乘 scale 的指令
 (每块 2×128×128 个元素,恰好加在串行链上)。
+
+## S6 — job 24081:v3(每 group 独占 stage,4·STAGES warps)+ 改良 Triton
+- 正确性:v3 全部 8 个配置 × 108 case 全 PASS(`logs/e12_final.out`)。
+- 性能(graph,us):
+| b | Triton | cl1s3(12w) | cl1s2(8w) | cl1s1(4w) | cl2s3 | cl2s2 | cl4s3 | cl4s2 | cl4s1 |
+|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| 1 | 8.3 | 26.9 | 27.3 | 34.7 | 20.0 | 19.0 | 17.8 | 15.2 | 16.3 |
+| 4 | 11.2 | 27.2 | 27.7 | 34.9 | 20.0 | 19.1 | 17.9 | 15.7 | 16.3 |
+| 16 | 22.3 | 28.3 | 30.0 | 37.1 | 21.8 | 20.7 | 37.3 | 32.4 | 22.9 |
+| 64 | 74.8 | 64.9 | 65.3 | 58.7 | 92.8 | 87.5 | 149.3 | 132.7 | 84.5 |
+- **关键观察:warp 数 4→8→12 几乎不改变时间**(cl1:34.7 → 27.3 → 26.9)。如果是发射延迟受限,12 warps 应接近 3× 加速。
+  → 瓶颈是**某个被所有 warp 共享的 pipe**,不是延迟。候选:tensor pipe(mma.sync)、smem 带宽。
+- ncu(v1 cl1s3)bank conflict 只有 18%,smem wavefront 利用率 <1% → 不是 smem。
+  `sm__pipe_tensor_subpipe_hmma_cycles_active_realtime` ≈ 整个 kernel 时长 → **tensor pipe 一直忙**。
+- 推算:若 `mma.sync.m16n8k16` 在 B300 上每 SMSP 每 ~48 cycle 才能发一条,则每块 64 mma/warp → 3072 cyc ≈ 1.5 us/块/SMSP;
+  cl1 16 块 → 24 us(实测 27);Triton 每块 2.3 us = 1.5 MMA + 0.8 载入(实测 E5 的斜率)。两个 kernel 都对上。
+  → 写 `exp/mma_rate.cu` 直接测 mma.sync 吞吐(job 24082)。
+- 改良 Triton(`exp/triton_v2.py`,全 PASS):last-CTA 融合 merge 反而更慢(b=1 10.8 vs 8.3):原子 + volatile 读 16 份
+  partial 的串行尾巴 ≈ 3 us,比独立 merge kernel 的 2.7 us 还长;num_warps 8 无益(同样说明不是延迟受限)。
+
+## S7 — job 24082:mma.sync 吞吐微基准(`exp/mma_rate.cu`,`logs/mma_rate_final.out`)
+| 指令 | cyc/inst/SMSP(1–4 warps/SMSP 一致) | 全卡 TFLOPS |
+|--|--:|--:|
+| mma.sync m16n8k16 bf16 / f16 | 8.0–8.2 | **~320** |
+| mma.sync m16n8k8 bf16 | 8.0 | 160 |
+| mma.sync m16n8k32 e4m3 | 4.2–4.6 | ~1200 |
+| FFMA(4 FMA/线程/条) | 4.2 | 38(fp32 CUDA core) |
+- **B300 上 legacy `mma.sync` bf16 只有 ~320 TFLOPS ≈ tcgen05 峰值(~2250)的 1/7**;fp8 mma.sync 快 4×(1200)。
+- 但换算到本 kernel:每块每 SMSP 64 条 × 8 cyc = 512 cyc ≈ 0.25 us,**不足以解释** 1.7 us/块。S6 的假设(MMA pipe 饱和)不成立。
+- 每 SMSP 吞吐与 warps 数无关(pipe 吞吐),延迟未测。
+→ 下一步:kernel 内 clock64 分相计时 + 消融(去 MMA / 去 ldmatrix / 去载入)定位每块 1.7 us 到底花在哪。
+
+## S8 — job 24084:融合 kernel 消融 + kernel 内 clock64 分相计时(`exp/e13_ablate.py`,`logs/e13_ablation_final.out`)
+**先看时钟**:job 开头 `nvidia-smi` 报 SM 时钟 **1095 MHz**;kernel 内 clock64 总周期数 ≈ 实测 us 数(cl1s3:27.2k cyc vs 27.6 us)
+→ **kernel 运行时 SM 时钟 ≈ 1.0–1.1 GHz,不是标称 2.03 GHz**。此前所有"@2.03GHz"换算都错了 2 倍;Triton 基线亦然。
+待 job 24087 用 globaltimer 精确测量并查是否被锁频。
+
+分相(cycles ≈ ns;每 CTA 每 warp-group 平均):
+| 配置 | 总 us | prologue | wait(TMA) | compute | epilogue |
+|--|--:|--:|--:|--:|--:|
+| cl1s3(16 块/CTA,3 组) | 27.6 | 2.2k | 4.2k | 11.3k | 7.5k |
+| cl1s1(16 块,1 组) | 35.4 | 1.6k | 8.3k | 22.6k | 2.5k |
+| cl4s2(4 块,2 组) | 15.6 | 1.7k | 1.1k | 3.3k | 7.9k |
+| cl4s1(4 块,1 组) | 17.2 | 1.5k | 1.7k | 6.0k | 6.3k |
+消融(cl1s1,单组,每块 compute 周期):完整 1.41k;去 MMA 1.20k;去 ldmatrix 1.05k;去 exp 1.32k;去 MMA+ldmatrix 0.70k;
+全去(只剩掩码/softmax 标量/循环骨架)0.29k。去载入(不等 TMA)时 16 块 compute 16.1k = 1.0k/块。
+- **每块 compute ≈ 1.4k cycles ≈ 1.4 us @1GHz**,其中 MMA ~0.2k、ldmatrix ~0.35k、exp ~0.1k、其余(掩码、max、shuffle、
+  重缩放、地址)~0.7k。没有单一大头,是 ~400 条指令 × ~3.5 cycle 的串行发射(单 warp/SMSP 无法掩盖)。
+- 多组(cl1s3)能把 3 组叠起来,但每组每块反而从 1.4k 涨到 2.1k(共享 SMSP),总 compute 只降 2×;
+  且 **epilogue 涨到 7.5k**:12 warps 的 smem 合并(12 × 8.3 KB 写 + 读)+ 等最慢的组。
+- **cluster 的 epilogue 6–8k cycles**(两次 cluster.sync + DSMEM 合并)是 cl4 配置的最大单项:比 Triton 整个 merge kernel(2.7 us)还贵。
+- prologue 1.5–2.6k:seq_lens → topk → block_table 三次依赖的 L2 往返(≈500 cyc 各)+ Q 载入。
+- 全消融后的骨架仍要 10.6k cycles(cl4s1)= prologue 2.6k + epilogue 6.4k + 1.2k:**固定开销就已超过 Triton 的 8.2 us**。
+
+### 结论
+在 ~1 GHz 时钟、legacy mma.sync、每 warp 串行 ~400 条指令/块的约束下,一个块的 compute 下限 ≈ 1–1.4 us,与 Triton 的
+每块 2.3 us(含 0.8 载入)同量级;**Triton 基线"1 块/CTA"的切法在 b≤4 已接近这类 kernel 的最优**,能省的只有 merge kernel(2.7 us)
+和 launch 固定开销——而我用 cluster 做 merge 的代价(6–8k cycles)比 merge kernel 还大。
+→ 融合 kernel 要赢必须:(1) 放弃 cluster 合并,改用无 cluster 的 1 块/CTA + 极简合并;(2) 把 prologue 的三级依赖 load 缩短;
+(3) 或者换 tcgen05 让 MMA/ldmatrix 从 warp 发射流里消失(CUTLASS 的做法)。
+
+## S9 — job 24087:SM 时钟(`exp/clock_probe.cu`,`logs/clock_final.out`)
+- `nvidia-smi -q -d CLOCK`:Applications/Max Clocks = 2032 MHz,但 **当前 SM = 1095 MHz**;PERFORMANCE:P0,无 HW/SW 降频活动。
+- globaltimer 对 clock64 实测:冷启 1095 MHz;连续 200 次小 kernel 后 1095;148 CTA × 200k 次 FMA 重载 50 次后仍 **1094 MHz**。
+- → 本机 SM 时钟被固定在 1095 MHz(54% 标称),不随负载提升,无法(无 root)更改。**所有 us 数字都是 1.095 GHz 下的**;
+  折算到 2.03 GHz 时钟,计算/延迟受限部分会缩短 ~1.85×,DRAM 部分不变(mem 3996 MHz 正常)。
+- mma_rate 的 320 TFLOPS(bf16 mma.sync)相应是 1.095 GHz 下的数字;换算标称时钟 ≈ 590 TFLOPS,仍只有 tcgen05 峰值的 ~1/4。

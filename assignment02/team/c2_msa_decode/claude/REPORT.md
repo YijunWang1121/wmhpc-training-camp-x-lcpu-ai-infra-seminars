@@ -84,4 +84,61 @@ b=1 的 8.2 us = decode 固定 3.6 + 每块链 2.3 × 1 + merge 2.7(merge 只读
 - 推论:在 B300 上用 tcgen05(M≥64)做 decode 会浪费 3/4 的 MMA 行,但 MMA 不是瓶颈,tcgen05 的真正价值是**单线程异步发射**
   (免去每块 ~460 条 ldmatrix/mma/exp 指令的串行发射),这是 CUTLASS 路径在大 batch 更快的原因之一(§8)。
 
-（§4–§9 见下,随实验推进补齐）
+
+## 4. 讨论点 2:两个 kernel 融不融?merge 放 cluster / mbarrier 里做?
+
+**结论:融。** 证据:
+- merge kernel 在 b=1 时 2.7 us / 8.2 us = 33%,b=16 时 3.2 / 21.9 = 15%;它读的数据 b=1 只有 272 KB(ncu),纯固定开销。
+- split-K 本身在小 batch 是必要的(E5:1 CTA 串行吃 16 块要 40 us),所以"不 split"不是选项;要去掉的是**第二个 launch**。
+
+**怎么融(两条路,都已实现并实测):**
+1. **cluster + DSMEM**(`exp/msa_decode.cu`):一个 (token, kv_head) 的 16 块分给一个 cluster 的 CL 个 CTA;各 CTA 把
+   (m[16], l[16], acc[16×128] fp32) 留在自己 smem;`cluster.sync()` 后 rank 0 通过 `map_shared_rank`(PTX `mapa`)读其余 CTA 的
+   partial 做 LSE 合并并写输出;再 `cluster.sync()` 保证被读的 CTA 不提前退出——这是 Programming Guide 的硬性要求
+   (DOCS.md 引文)。partial 不落 global、不占 L2、没有第二个 launch。mbarrier 在这里只负责 TMA 完成计数
+   (`cp.async.bulk.tensor … mbarrier::complete_tx::bytes`),CTA 间同步用 cluster barrier 更直接。
+2. **"最后到达的 CTA 做 merge"**(`exp/triton_v2.py`,改良 Triton):partial 照旧写 global,每个 (token, kv_head) 一个原子计数器
+   (`atomic_add(sem="acq_rel")`),数到 NUM_CHUNKS−1 的 CTA 用 volatile load 读全部 partial 合并,并把计数器归零以便 graph 重放。
+   不需要 cluster、任何架构可用、Triton 就能写。
+
+**cluster 大小的限制(实测 + 文档):** 可移植上限 8,B200/B300 opt-in 16(Blackwell Tuning Guide)。实测 cluster=16
+(每 CTA 1 块)b=1 40 us、b=16 242 us——随 CTA 数线性变慢:16 个 CTA 必须同时落在同一 GPC 的 16 个空 SM 上,
+只要 GPC 里有 SM 被占,整个 cluster 排队。cluster ≤ 4 才是可用区间(§7 数据)。
+
+## 5. 讨论点 3:top-k 两级间接寻址,TMA tensor map 能不能表达?
+
+**结论:能,而且不需要任何 gather 模式。** 文档依据(DOCS.md A–D,PTX ISA 原文):
+- `cp.async.bulk.tensor` 的 `tensorCoords` 是 `.s32` 寄存器向量——坐标是运行期值。把 kv_cache 整体建成 4D tensor map
+  `[num_pages][num_kv_heads][128][256]`,kernel 里做 `topk_idx[slot] → block_table[req][blk] → page` 两次标量 load,
+  然后以 `{0, 0, kh, page}` 为坐标发 TMA。TMA 只负责"规则 box",间接寻址由 SM 线程算坐标完成。
+- 唯一带 gather 语义的 `.tile::gather4` 只做 4 行、仅 2D(PTX 8.6,sm_100a);本题一块是页内连续 128 行,用不上。
+- PTX 9.4 新增 `.override::global_address`(运行期覆盖 tensormap 基址,"一个 map 描述一页、按页换基址"),更贴合
+  paged KV,但需要 CUDA 13.4;本机 13.0(PTX 9.0)不可用。
+- 不用 tensormap 也行:vLLM 布局下一块 (page, kv_head) 的 K|V 是连续 64 KiB,1-D `cp.async.bulk` 给全局地址即可;
+  代价是没有 swizzle(ldmatrix 会 8-way bank conflict)且 K/V 行内交错无法只取一半。
+
+**实验验证**(`exp/tma_indirect.cu`,job 24076/24077;每 CTA 先做两级间接寻址,再用三种方式搬块,与 host 按同样寻址算的校验和比对):
+| 搬法 | 校验 | 单块延迟 | 16 块流式(3 级 ring)/CTA |
+|--|--|--:|--:|
+| (A) TMA 4D map,page 作运行期坐标 | OK | 0.79–0.86 us | 4.6–5.0 us(≈ 220 GB/s / CTA) |
+| (B) 1-D `cp.async.bulk`,运行期地址 | OK | 0.80–0.95 us | 4.7–5.1 us |
+| (C) 128 线程 `ld.global.v4` | OK | 3.0–5.2 us | 75–80 us |
+→ 间接寻址 + TMA 正确;单块 0.8 us 就是"一次 DRAM 往返 + 64 KiB 进 smem"的下限,Triton 每块 2.3 us 里载入只占 ~0.9 us。
+融合 kernel(§7)就是用 (A) 加 128B swizzle 实现的。
+
+## 6. 讨论点 4:FP8 KV cache 的 scale 放哪一层?
+
+上游口径(`test_sparse_attn_fp8_scale.py`):K = fp8 × k_scale,V = fp8 × v_scale;标量或 `[kv_head, token]` 两种;
+带 scale 的输出要与"反量化成 bf16 再跑同一 kernel"在 atol=rtol=2e-2 内一致,不带 scale 必须明显不同。
+
+**结论:标量 scale 不该进 kernel;per-token scale 进 kernel但加在 S/P 上,不要反量化 K/V。**
+- 数学上 softmax(Q·(k_s K)ᵀ)·(v_s V) = v_s · softmax((k_s Q)·Kᵀ)·V:标量 k_scale 折进 Q(host 一个乘法,或直接折进
+  `sm_scale`),v_scale 乘在输出上。kernel 完全不感知 scale。实测(E8,scale 0.3/0.7,`logs/e10_*.out`):
+  与反量化参照 err_ratio 4e-3、max|Δ| 2e-4,远在 2e-2 内。
+- per-token/head scale 不能折进 Q,但 S[:, j] *= k_scale[j] 是对 16×128 的 S tile 做一次列缩放,
+  P[:, j] *= v_scale[j] 同理——比对 128×128 的 K/V 每个元素做 fp8→bf16→乘→bf16 便宜 8 倍,且不在载入路径上。
+- 上游 Triton 的做法(load 后逐元素 `.to(bf16) * scale`)让 fp8 路径**比 bf16 还慢 30–60%**
+  (b=1:8.3 → 11.0/11.8/12.5 us;b=8:14.9 → 19.8/24.2/21.7 us):小 batch 不缺带宽,多出来的转换指令却直接加在串行链上。
+  这与讨论点 1 一致:fp8 把 AI 翻倍(16→32 FLOP/B)对一个 latency-bound 的 kernel 毫无帮助。
+- CUTLASS 路径(`msa_cutlass_sparse_decode.py`)正是走"折进标量"这条:`q_scale/k_scale/v_scale/o_scale` 作为 float 传入
+  `fmha_sm100`,且要求 `query_fp8`——用 fp8 MMA,scale 全在 epilogue。

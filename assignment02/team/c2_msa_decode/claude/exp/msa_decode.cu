@@ -38,6 +38,9 @@ struct Params {
   int bt_stride, total_q, nkv, dql;
   long q_stride_t, q_stride_h;  // in elements
   float scale_log2;             // sm_scale * log2(e)
+  long long* dbg;               // optional: per-CTA [t_prologue, t_loop_wait, t_loop_compute, t_epilogue] cycles
+  __nv_bfloat16* o_part;        // SPLIT>1: [SPLIT][total_q][nheads][128]  (acc / l, Triton partial format)
+  float* lse_part;              // SPLIT>1: [SPLIT][total_q][nheads]       (m + log2 l, log2 domain)
 };
 
 __device__ __forceinline__ uint32_t su32(const void* p) { return (uint32_t)__cvta_generic_to_shared(p); }
@@ -79,10 +82,11 @@ __device__ __forceinline__ void group_bar(int g) { asm volatile("bar.sync %0, %1
 __device__ __forceinline__ uint32_t swz(int r, int c) { return r * 128 + ((c ^ (r & 7)) << 4); }
 
 // smem layout: [stages x 64K (1024-aligned)] [q 4K] [bars] [pages]
-template <int CL, int STAGES>
+template <int CL, int STAGES, int SPLIT = 1>
 __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params& p) {
-  static_assert(TOPK % CL == 0, "cluster must divide topk");
-  constexpr int B = TOPK / CL;  // slots per CTA
+  static_assert(TOPK % (CL * SPLIT) == 0, "cluster*split must divide topk");
+  static_assert(CL == 1 || SPLIT == 1, "split-K without cluster only");
+  constexpr int B = TOPK / (CL * SPLIT);  // slots per CTA
   constexpr int NG = STAGES, NWARPS = 4 * NG, NTHREADS = 32 * NWARPS;
   extern __shared__ __align__(1024) unsigned char smem[];
   const uint32_t smem_u32 = su32(smem);
@@ -94,7 +98,8 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
   int rank = 0;
   [[maybe_unused]] cg::cluster_group cluster = cg::this_cluster();
   if constexpr (CL > 1) rank = (int)cluster.block_rank();
-  const int unit = blockIdx.x / CL;
+  if constexpr (SPLIT > 1) rank = blockIdx.x % SPLIT;
+  const int unit = blockIdx.x / (CL * SPLIT);
   const int t = unit % p.total_q, kh = unit / p.total_q;
   const int req = t / p.dql;
   const int tid = threadIdx.x, warp = tid >> 5, lane = tid & 31;
@@ -109,6 +114,7 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
   const int nblk = max(0, min(B, real_topk - slot0));
   const int32_t* topk_row = p.topk + ((size_t)kh * p.total_q + t) * TOPK + slot0;
 
+  long long dbg_t0 = clock64(), dbg_wait = 0, dbg_comp = 0, dbg_t1 = 0, dbg_t2 = 0;
   // --- prologue: barriers, page indirection (two dependent scalar loads, all slots in parallel), Q tile ---
   if (tid == 0) {
     for (int s = 0; s < STAGES; ++s) mbar_init(&bars[s], 1);
@@ -167,8 +173,13 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
   for (int n = 0; n < 16; ++n) acc[n][0] = acc[n][1] = acc[n][2] = acc[n][3] = 0.f;
 
   const uint32_t kt = smem_u32 + grp * BLK_BYTES;  // this group's stage
+  dbg_t1 = clock64();
   for (int i = grp; i < nblk; i += NG) {
-    mbar_wait(&bars[grp], (i / NG) & 1);  // tiles: K[0:64], K[64:128], V[0:64], V[64:128]
+    long long dbg_a = clock64();
+#ifndef ABL_NO_LOAD
+    mbar_wait(&bars[grp], (i / NG) & 1);
+#endif
+    long long dbg_b = clock64(); dbg_wait += dbg_b - dbg_a;  // tiles: K[0:64], K[64:128], V[0:64], V[64:128]
     const int valid = min(PAGE, kv_len - topk_row[i] * PAGE);  // keys < valid are real (topk row is L1-hot)
 
     // S = Q K^T for this warp's 32 keys: 4 n-tiles
@@ -179,10 +190,16 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
     for (int ks = 0; ks < 8; ++ks) {
 #pragma unroll
       for (int np = 0; np < 2; ++np) {
-        uint32_t b0, b1, b2, b3;
+        uint32_t b0 = 0x3c003c00u, b1 = 0x3c003c00u, b2 = 0x3c003c00u, b3 = 0x3c003c00u;
+#ifndef ABL_NO_LDSM
         ldsm_x4(b0, b1, b2, b3, kt + koff[ks][np]);
+#endif
+#ifndef ABL_NO_MMA
         mma_bf16(sc[np * 2 + 0], qa[ks], b0, b1);
         mma_bf16(sc[np * 2 + 1], qa[ks], b2, b3);
+#else
+        sc[np * 2][0] += __uint_as_float(b0) + __uint_as_float(qa[ks][0]); sc[np * 2 + 1][0] += __uint_as_float(b2);
+#endif
       }
     }
     // scale (+ mask only in the tail block) + row max
@@ -223,8 +240,12 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
     uint32_t pa[2][4];  // P as A fragments for the 2 k-steps (16 keys each)
 #pragma unroll
     for (int n = 0; n < 4; ++n) {
+#ifndef ABL_NO_EXP
       const float p0 = exp2f(sc[n][0] - mu[0]), p1 = exp2f(sc[n][1] - mu[0]);
       const float p2 = exp2f(sc[n][2] - mu[1]), p3 = exp2f(sc[n][3] - mu[1]);
+#else
+      const float p0 = sc[n][0] - mu[0], p1 = sc[n][1] - mu[0], p2 = sc[n][2] - mu[1], p3 = sc[n][3] - mu[1];
+#endif
       l_r[0] += p0 + p1;
       l_r[1] += p2 + p3;
       pa[n >> 1][(n & 1) * 2 + 0] = pack_bf16(p0, p1);
@@ -242,15 +263,25 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
     for (int ks = 0; ks < 2; ++ks) {
 #pragma unroll
       for (int np = 0; np < 8; ++np) {
-        uint32_t b0, b1, b2, b3;
+        uint32_t b0 = 0x3c003c00u, b1 = 0x3c003c00u, b2 = 0x3c003c00u, b3 = 0x3c003c00u;
+#ifndef ABL_NO_LDSM
         ldsm_x4_t(b0, b1, b2, b3, kt + voff[ks][np]);
+#endif
+#ifndef ABL_NO_MMA
         mma_bf16(acc[np * 2 + 0], pa[ks], b0, b1);
         mma_bf16(acc[np * 2 + 1], pa[ks], b2, b3);
+#else
+        acc[np * 2][0] += __uint_as_float(b0) + __uint_as_float(pa[ks][0]); acc[np * 2 + 1][0] += __uint_as_float(b2);
+#endif
       }
     }
     group_bar(grp);  // the 4 warps of this group are done with the stage -> refill it with the group's next block
+#ifndef ABL_NO_LOAD
     if ((tid & 127) == 0 && i + NG < nblk) issue(i + NG, grp);
+#endif
+    dbg_comp += clock64() - dbg_b;
   }
+  dbg_t2 = clock64();
   // finish per-thread l: reduce across the quad
 #pragma unroll
   for (int h = 0; h < 2; ++h) {
@@ -321,6 +352,14 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
         const float L = scratch[16 + row];
         const float inv = (L > 0.f) ? 1.f / L : 0.f;
         int4* dst = reinterpret_cast<int4*>(og + (size_t)row * p.q_stride_h + c0);
+        if constexpr (SPLIT > 1) {  // Triton partial format: o = acc / l, lse = m + log2 l (log2 domain); empty -> (0, -inf)
+          const int h = kh * GQA + row;
+          dst = reinterpret_cast<int4*>(p.o_part + (((size_t)rank * p.total_q + t) * (p.nkv * GQA) + h) * HD + c0);
+          if ((idx & 15) == 0) {
+            const float M = scratch[row];
+            p.lse_part[((size_t)rank * p.total_q + t) * (p.nkv * GQA) + h] = (L > 0.f) ? M + log2f(L) : -INFINITY;
+          }
+        }
         *dst = make_int4(pack_bf16(o[it][0] * inv, o[it][1] * inv), pack_bf16(o[it][2] * inv, o[it][3] * inv),
                          pack_bf16(o[it][4] * inv, o[it][5] * inv), pack_bf16(o[it][6] * inv, o[it][7] * inv));
       }
@@ -359,6 +398,10 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
     }
     cluster.sync();  // keep every rank's smem alive until rank 0 is done reading
   }
+  if (p.dbg != nullptr && (tid & 127) == 0) {
+    long long* d = p.dbg + ((size_t)blockIdx.x * 3 + grp) * 5;
+    d[0] = dbg_t1 - dbg_t0; d[1] = dbg_wait; d[2] = dbg_comp; d[3] = clock64() - dbg_t2; d[4] = clock64() - dbg_t0;
+  }
 }
 
 template <int CL, int STAGES>
@@ -368,6 +411,38 @@ __global__ void __cluster_dims__(CL, 1, 1) __launch_bounds__(128 * STAGES) decod
 template <int STAGES>
 __global__ void __launch_bounds__(128 * STAGES) decode_kernel_plain(const __grid_constant__ CUtensorMap map, Params p) {
   decode_body<1, STAGES>(map, p);
+}
+template <int STAGES, int SPLIT>
+__global__ void __launch_bounds__(128 * STAGES) decode_kernel_split(const __grid_constant__ CUtensorMap map, Params p) {
+  decode_body<1, STAGES, SPLIT>(map, p);
+}
+// floor probes: what does an (almost) empty kernel of the same launch shape cost?
+__global__ void probe_empty(Params p) { if (p.dbg == (long long*)1) p.out[0] = __float2bfloat16(0.f); }
+__global__ void probe_index(Params p) {  // seq_lens -> topk -> block_table chain, one block per CTA, then a 16-B store
+  const int unit = blockIdx.x / 16, slot = blockIdx.x % 16;
+  const int t = unit % p.total_q, kh = unit / p.total_q, req = t / p.dql;
+  const int seq_len = p.seq_lens[req];
+  const int blk = p.topk[((size_t)kh * p.total_q + t) * TOPK + slot];
+  const int page = p.bt[(size_t)req * p.bt_stride + blk];
+  if (threadIdx.x == 0) p.lse_part[blockIdx.x] = (float)(page + seq_len);
+}
+__global__ void probe_index_tma(const __grid_constant__ CUtensorMap map, Params p) {  // + one 64 KiB TMA block load
+  extern __shared__ __align__(1024) unsigned char smem[];
+  __shared__ __align__(8) uint64_t bar;
+  const int unit = blockIdx.x / 16, slot = blockIdx.x % 16;
+  const int t = unit % p.total_q, kh = unit / p.total_q, req = t / p.dql;
+  const int blk = p.topk[((size_t)kh * p.total_q + t) * TOPK + slot];
+  const int page = p.bt[(size_t)req * p.bt_stride + blk];
+  if (threadIdx.x == 0) {
+    mbar_init(&bar, 1); asm volatile("fence.proxy.async.shared::cta;");
+    mbar_expect_tx(&bar, BLK_BYTES);
+    const uint32_t d = su32(smem), b = su32(&bar);
+    tma_4d(d, &map, b, 0, 0, kh, page); tma_4d(d + TILE_BYTES, &map, b, 64, 0, kh, page);
+    tma_4d(d + 2 * TILE_BYTES, &map, b, 128, 0, kh, page); tma_4d(d + 3 * TILE_BYTES, &map, b, 192, 0, kh, page);
+  }
+  __syncthreads();
+  mbar_wait(&bar, 0);
+  if (threadIdx.x == 0) p.lse_part[blockIdx.x] = __bfloat162float(reinterpret_cast<__nv_bfloat16*>(smem)[page & 127]);
 }
 
 template <int CL, int STAGES>
@@ -386,7 +461,7 @@ static int launch(const CUtensorMap& map, const Params& p, int grid, cudaStream_
 
 extern "C" int msa_decode_launch(const void* q, const void* kv, void* out, const int32_t* topk, const int32_t* bt, int bt_stride,
                                  const int32_t* seq_lens, int total_q, int nkv, int npages, int dql, float sm_scale,
-                                 long q_stride_t, long q_stride_h, int cluster, int stages, void* stream_) {
+                                 long q_stride_t, long q_stride_h, int cluster, int stages, void* stream_, void* dbg) {
   using namespace msa;
   cudaStream_t stream = (cudaStream_t)stream_;
   CUtensorMap map;
@@ -400,10 +475,66 @@ extern "C" int msa_decode_launch(const void* q, const void* kv, void* out, const
   Params p;
   p.q = (const __nv_bfloat16*)q; p.out = (__nv_bfloat16*)out; p.topk = topk; p.bt = bt; p.seq_lens = seq_lens;
   p.bt_stride = bt_stride; p.total_q = total_q; p.nkv = nkv; p.dql = dql;
-  p.q_stride_t = q_stride_t; p.q_stride_h = q_stride_h; p.scale_log2 = sm_scale * 1.4426950408889634f;
+  p.q_stride_t = q_stride_t; p.q_stride_h = q_stride_h; p.scale_log2 = sm_scale * 1.4426950408889634f; p.dbg = (long long*)dbg;
   const int grid = total_q * nkv * cluster;
 #define L(CL, ST) if (cluster == CL && stages == ST) return launch<CL, ST>(map, p, grid, stream);
   L(1, 1) L(1, 2) L(1, 3) L(2, 1) L(2, 2) L(2, 3) L(4, 1) L(4, 2) L(4, 3)
 #undef L
   return -4;
+}
+
+// split-K without cluster (SPLIT CTAs per unit, partials in Triton's format). stages must be 1.
+extern "C" int msa_decode_split_launch(const void* q, const void* kv, void* o_part, void* lse_part, const int32_t* topk,
+                                       const int32_t* bt, int bt_stride, const int32_t* seq_lens, int total_q, int nkv,
+                                       int npages, int dql, float sm_scale, long q_stride_t, long q_stride_h, int split,
+                                       void* stream_) {
+  using namespace msa;
+  cudaStream_t stream = (cudaStream_t)stream_;
+  CUtensorMap map;
+  cuuint64_t gdim[4] = {ROW, PAGE, (cuuint64_t)nkv, (cuuint64_t)npages};
+  cuuint64_t gstr[3] = {ROW * 2, (cuuint64_t)PAGE * ROW * 2, (cuuint64_t)nkv * PAGE * ROW * 2};
+  cuuint32_t box[4] = {64, PAGE, 1, 1}, estr[4] = {1, 1, 1, 1};
+  if (cuTensorMapEncodeTiled(&map, CU_TENSOR_MAP_DATA_TYPE_BFLOAT16, 4, const_cast<void*>(kv), gdim, gstr, box, estr,
+                             CU_TENSOR_MAP_INTERLEAVE_NONE, CU_TENSOR_MAP_SWIZZLE_128B, CU_TENSOR_MAP_L2_PROMOTION_L2_256B,
+                             CU_TENSOR_MAP_FLOAT_OOB_FILL_NONE) != CUDA_SUCCESS) return -1;
+  Params p{};
+  p.q = (const __nv_bfloat16*)q; p.o_part = (__nv_bfloat16*)o_part; p.lse_part = (float*)lse_part; p.topk = topk; p.bt = bt;
+  p.seq_lens = seq_lens; p.bt_stride = bt_stride; p.total_q = total_q; p.nkv = nkv; p.dql = dql;
+  p.q_stride_t = q_stride_t; p.q_stride_h = q_stride_h; p.scale_log2 = sm_scale * 1.4426950408889634f;
+  constexpr size_t smem = (size_t)1 * BLK_BYTES + GQA * HD * 2 + MAX_STAGES * 8 + TOPK * 4;
+  const int grid = total_q * nkv * split;
+  static bool conf[17] = {};
+  auto go = [&](auto kern) -> int {
+    if (!conf[split]) { if (cudaFuncSetAttribute(kern, cudaFuncAttributeMaxDynamicSharedMemorySize, (int)smem) != cudaSuccess) return -2; conf[split] = true; }
+    kern<<<grid, 128, smem, stream>>>(map, p);
+    return (int)cudaGetLastError();
+  };
+  if (split == 16) return go(decode_kernel_split<1, 16>);
+  if (split == 8) return go(decode_kernel_split<1, 8>);
+  if (split == 4) return go(decode_kernel_split<1, 4>);
+  if (split == 2) return go(decode_kernel_split<1, 2>);
+  return -4;
+}
+
+extern "C" int msa_probe_launch(int mode, const void* kv, void* lse_part, const int32_t* topk, const int32_t* bt, int bt_stride,
+                                const int32_t* seq_lens, int total_q, int nkv, int npages, int dql, void* stream_) {
+  using namespace msa;
+  cudaStream_t stream = (cudaStream_t)stream_;
+  Params p{};
+  p.lse_part = (float*)lse_part; p.topk = topk; p.bt = bt; p.seq_lens = seq_lens; p.bt_stride = bt_stride;
+  p.total_q = total_q; p.nkv = nkv; p.dql = dql;
+  const int grid = total_q * nkv * 16;
+  if (mode == 0) { probe_empty<<<grid, 128, 0, stream>>>(p); return (int)cudaGetLastError(); }
+  if (mode == 1) { probe_index<<<grid, 128, 0, stream>>>(p); return (int)cudaGetLastError(); }
+  CUtensorMap map;
+  cuuint64_t gdim[4] = {ROW, PAGE, (cuuint64_t)nkv, (cuuint64_t)npages};
+  cuuint64_t gstr[3] = {ROW * 2, (cuuint64_t)PAGE * ROW * 2, (cuuint64_t)nkv * PAGE * ROW * 2};
+  cuuint32_t box[4] = {64, PAGE, 1, 1}, estr[4] = {1, 1, 1, 1};
+  if (cuTensorMapEncodeTiled(&map, CU_TENSOR_MAP_DATA_TYPE_BFLOAT16, 4, const_cast<void*>(kv), gdim, gstr, box, estr,
+                             CU_TENSOR_MAP_INTERLEAVE_NONE, CU_TENSOR_MAP_SWIZZLE_128B, CU_TENSOR_MAP_L2_PROMOTION_L2_256B,
+                             CU_TENSOR_MAP_FLOAT_OOB_FILL_NONE) != CUDA_SUCCESS) return -1;
+  static bool conf = false;
+  if (!conf) { cudaFuncSetAttribute(probe_index_tma, cudaFuncAttributeMaxDynamicSharedMemorySize, (int)BLK_BYTES); conf = true; }
+  probe_index_tma<<<grid, 128, BLK_BYTES, stream>>>(map, p);
+  return (int)cudaGetLastError();
 }
