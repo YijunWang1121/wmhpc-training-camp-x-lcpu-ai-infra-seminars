@@ -1,0 +1,6 @@
+profiles/*.nsys-rep
+profiles/*.sqlite
+profiles/*.ncu-rep
+exp/tma_indirect
+exp/*.o
+__pycache__/

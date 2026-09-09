@@ -1,0 +1,101 @@
++ for b in 1 4 8 16
++ nsys profile -c cudaProfilerApi -t cuda --cuda-graph-trace=node -f true -o profiles/nsys_b1 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 1 20
++ nsys stats -r cuda_gpu_trace -f csv -o profiles/nsys_b1 profiles/nsys_b1.nsys-rep
++ nsys stats -r cuda_gpu_kern_sum -f csv -o profiles/nsys_b1 profiles/nsys_b1.nsys-rep
+
+WARNING: Existing SQLite export found: profiles/nsys_b1.sqlite
+         File is older than input file: profiles/nsys_b1.nsys-rep
+         Use --force-export=true to update export file.
+
+usage: nsys stats [<args>] <input-file>
+Try 'nsys stats --help' for more information.
++ for b in 1 4 8 16
++ nsys profile -c cudaProfilerApi -t cuda --cuda-graph-trace=node -f true -o profiles/nsys_b4 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 4 20
++ nsys stats -r cuda_gpu_trace -f csv -o profiles/nsys_b4 profiles/nsys_b4.nsys-rep
++ nsys stats -r cuda_gpu_kern_sum -f csv -o profiles/nsys_b4 profiles/nsys_b4.nsys-rep
+
+WARNING: Existing SQLite export found: profiles/nsys_b4.sqlite
+         File is older than input file: profiles/nsys_b4.nsys-rep
+         Use --force-export=true to update export file.
+
+usage: nsys stats [<args>] <input-file>
+Try 'nsys stats --help' for more information.
++ for b in 1 4 8 16
++ nsys profile -c cudaProfilerApi -t cuda --cuda-graph-trace=node -f true -o profiles/nsys_b8 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 8 20
++ nsys stats -r cuda_gpu_trace -f csv -o profiles/nsys_b8 profiles/nsys_b8.nsys-rep
++ nsys stats -r cuda_gpu_kern_sum -f csv -o profiles/nsys_b8 profiles/nsys_b8.nsys-rep
+
+WARNING: Existing SQLite export found: profiles/nsys_b8.sqlite
+         File is older than input file: profiles/nsys_b8.nsys-rep
+         Use --force-export=true to update export file.
+
+usage: nsys stats [<args>] <input-file>
+Try 'nsys stats --help' for more information.
++ for b in 1 4 8 16
++ nsys profile -c cudaProfilerApi -t cuda --cuda-graph-trace=node -f true -o profiles/nsys_b16 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 16 20
++ nsys stats -r cuda_gpu_trace -f csv -o profiles/nsys_b16 profiles/nsys_b16.nsys-rep
++ nsys stats -r cuda_gpu_kern_sum -f csv -o profiles/nsys_b16 profiles/nsys_b16.nsys-rep
+
+WARNING: Existing SQLite export found: profiles/nsys_b16.sqlite
+         File is older than input file: profiles/nsys_b16.nsys-rep
+         Use --force-export=true to update export file.
+
+usage: nsys stats [<args>] <input-file>
+Try 'nsys stats --help' for more information.
++ for b in 1 4 8 16
++ ncu --set full --import-source no -k regex:_gqa_sparse_decode_kernel -c 1 -s 2 -f -o profiles/ncu_dec_b1 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 1 3
++ ncu --set full -k regex:_merge_topk_attn_out_kernel -c 1 -s 2 -f -o profiles/ncu_mrg_b1 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 1 3
++ for b in 1 4 8 16
++ ncu --set full --import-source no -k regex:_gqa_sparse_decode_kernel -c 1 -s 2 -f -o profiles/ncu_dec_b4 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 4 3
++ ncu --set full -k regex:_merge_topk_attn_out_kernel -c 1 -s 2 -f -o profiles/ncu_mrg_b4 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 4 3
++ for b in 1 4 8 16
++ ncu --set full --import-source no -k regex:_gqa_sparse_decode_kernel -c 1 -s 2 -f -o profiles/ncu_dec_b8 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 8 3
++ ncu --set full -k regex:_merge_topk_attn_out_kernel -c 1 -s 2 -f -o profiles/ncu_mrg_b8 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 8 3
++ for b in 1 4 8 16
++ ncu --set full --import-source no -k regex:_gqa_sparse_decode_kernel -c 1 -s 2 -f -o profiles/ncu_dec_b16 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 16 3
++ ncu --set full -k regex:_merge_topk_attn_out_kernel -c 1 -s 2 -f -o profiles/ncu_mrg_b16 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 16 3
++ for ch in 1 4
++ ncu --set full -k regex:_gqa_sparse_decode_kernel -c 1 -s 2 -f -o profiles/ncu_dec_b1_ch1 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 1 3 1
++ for ch in 1 4
++ ncu --set full -k regex:_gqa_sparse_decode_kernel -c 1 -s 2 -f -o profiles/ncu_dec_b1_ch4 uv run --no-sync --project /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02 python exp/e3_target.py 1 3 4
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b1.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b16.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b1_ch1.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b1_ch4.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b4.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b8.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b1.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b16.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b4.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b8.ncu-rep --page details --print-units base
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b1.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b16.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b1_ch1.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b1_ch4.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b4.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_dec_b8.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b1.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b16.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b4.ncu-rep --page raw --csv
++ for f in profiles/ncu_*.ncu-rep
++ ncu -i profiles/ncu_mrg_b8.ncu-rep --page raw --csv
++ echo E3_DONE

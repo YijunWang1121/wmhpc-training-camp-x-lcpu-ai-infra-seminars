@@ -1,0 +1,2 @@
+warning: `--no-sync` has no effect when used outside of a project
+/home/lcpu/00737767/.local/share/uv/python/cpython-3.12-linux-x86_64-gnu/bin/python3.12: can't open file '/var/lib/slurm/slurmd/exp/e1_baseline.py': [Errno 2] No such file or directory
