@@ -99,3 +99,56 @@ harness 三组 check 全 PASS(err_ratio 3.2e-3 / 2.8e-3 / 3.2e-3)。
 3. merge kernel ~2.7 us(几乎全是固定开销:b=1 只读 272 KB)
 4. eager 模式再加 ~22 us host launch gap
 不是算力(tensor pipe <17%),不是带宽(DRAM <34%,b=1 仅 5.6%)。是 **latency + launch**。
+- 教训:B300 是 cc 10.3,sm_100a 的 cubin 不能跑(no kernel image);要用 family 目标 sm_100f(与 Makefile 默认一致)。job 24075 因此全失败,重编后重跑。
+
+## S3 — job 24076:讨论点 3 TMA 间接寻址实验(`exp/tma_indirect.cu`,`logs/tma_24076.out`)
+每 CTA 做一次 topk_idx → block_table → page 两级标量 load,然后用三种方式把一块 (page, kh) 64 KiB 搬进 smem,
+与 host 端按同样间接寻址算的校验和比对。1 块/CTA 结果(b=1/4/16 基本一致):
+| 搬法 | 校验 | CTA 内载入耗时(clock64) |
+|--|--|--:|
+| (A) `cp.async.bulk.tensor.4d` + 4D tensormap,page 作为运行期最高维坐标 | OK | 1645 cyc ≈ 0.83 us |
+| (B) 1-D `cp.async.bulk`,运行期全局地址 | OK | 1832 cyc ≈ 0.92 us |
+| (C) 128 线程 `ld.global.v4` 搬 64 KiB | OK | 5911 cyc ≈ 2.96 us |
+- **结论:TMA 能表达**——tensormap 描述 kv_cache 整体 [pages][kvh][128][256],间接寻址的结果(page)当坐标即可
+  (与 DOCS.md A 条一致:坐标是 .s32 寄存器)。TMA 不做 gather,但本题不需要 gather:一块就是页内连续 tile。
+- 单块延迟 0.83 us 是 "一次 DRAM 往返 + 64 KiB 进 smem" 的下限;Triton 每块 2.3 us 中,载入本身只占 ~0.9 us,
+  其余是 cp.async 由 128 线程发 4096 条 16 B 请求的发射开销 + 计算 + 不重叠。
+- 4/16 块/CTA 配置首轮因 smem 超 227 KB 失败(实验设计错误),已改成 3 级 ring 流式,job 24077 重跑。
+
+## S4 — job 24077/24078:融合 kernel v1(`exp/msa_decode_v1.cu`)正确但慢
+- 正确性:ACCEPTANCE 形状矩阵 108 个 (case × 配置) 全 PASS(err_R0 2.4e-3–2.6e-3,**优于** Triton 的 2.5e-3–3.3e-3;
+  逐元素对 Triton max|Δ| ≤ 9.8e-4;无 NaN)。含 real_topk<16、尾块、dql=2、cl∈{1,2,4,8,16}。
+- 性能(graph,us):b=1 Triton 8.1,v1 最好 cl4s2 21.0;cl1s3 26.9;cl16s1 40.4。**慢 2.6–5×**。
+- TMA 流式实验(job 24077)证明载入不是问题:1 CTA 用 3 级 ring 流 16 块只要 4.6 us(≈ 14 GB/s… 即 1 MiB/4.6us = 228 GB/s 单 CTA)。
+- ncu(b=1 cl1s3):4 CTA,SM 一直 active(sm__cycles_active ≈ 时长),DRAM 1.8%;每 warp 执行 7,340 条指令
+  (= 16 块 × ~460 条),Warp Cycles/Issued Inst = 4.0,stall 首位 `wait`(固定延迟依赖)。
+  → 瓶颈是 **单 warp 串行发射**:每 SM 只有 4 warps(每调度器 1 个),ldmatrix→mma→softmax→mma 的依赖链
+  延迟全部暴露,~460 条/块 × 4–6 cycle。这与 Triton 基线是同一种病(它也是 4 warps/CTA、1–2 CTA/SM)。
+- cl16 随 CTA 数线性变慢(b=1 40 us → b=16 242 us):16-CTA cluster 要在同一 GPC 里凑 16 个空 SM,
+  200 KB smem/CTA 时一个 GPC 只能放一个 cluster,cluster 之间近乎串行 → **cluster=16 不可取**,cl≤4 才合理。
+
+### v2 设计决定(据上面数据)
+1. 8 warps/CTA,分 2 个 warp-group,各处理奇/偶块 → 每 warp 指令减半、每调度器 2 warps 可互相掩盖延迟。
+2. 去掉每块都做的掩码/重缩放:valid==128 时跳过掩码;alpha 全为 1 时跳过 64 条 acc 重缩放(warp 一致分支)。
+3. 循环不变的 swizzle 地址提到循环外。
+4. cluster 只保留 1/2/4。
+
+## S5 — job 24079/24080:v2(8 warps 双 group 共享 ring)崩溃分析
+- v2 只有 cl4s1 报 `unspecified launch failure`(compute-sanitizer:Unknown Error 在 thread 0/128 处);其它配置数值正确。
+- 根因(mbarrier 语义):`mbarrier.try_wait.parity` 只能区分"当前相位"与"上一相位";两个 group 交错消费同一个
+  stage ring 时,group 1 可能在 group 0 还没消费完 block i 时就去等 block i+STAGES(同一 stage、两个相位之后),
+  parity 恰好等于"上一相位"→ 立即返回真,读到旧数据(STAGES=3 是潜在竞态),而 STAGES=1 时更进一步让第二个
+  arrive.expect_tx 落在未完成的相位上 → 硬件错误。
+- 修正(v3):**每个 warp-group 独占一个 stage**(NG = STAGES,4·STAGES warps),group g 只消费 i ≡ g (mod NG) 的块,
+  每个 barrier 的相位严格按消费顺序推进,不存在跨 group 的相位歧义。STAGES=3 → 12 warps(384 线程 × 170 reg = 65,280 ≤ 65,536)。
+
+## S5b — job 24080:讨论点 4 FP8 scale 实验(`exp/e8_fp8scale.py`,scale 0.3/0.7)
+| 放法 | 对反量化参照 max|Δ| / err_ratio | 上游阈值 2e-2 |
+|--|--|--|
+| (A) kernel 内逐元素(上游 mode 1) | 3e-5 / 3e-5 | OK |
+| (B) host 折进 Q + epilogue 乘 v_scale,kernel 不感知 scale | 2.3e-4 / 4.2e-3 | OK |
+| (C) kernel 内 per-token(上游 mode 2) | 3e-5 / 3e-5 | OK |
+| 不加 scale | 8e-2 / 1.25 | FAIL(应当) |
+计时(graph,us):b=1 bf16 8.3 / fp8 无 scale 11.0 / fp8 标量 11.8 / fp8 per-token 12.5;b=8:14.9 / 19.8 / 24.2 / 21.7。
+→ 上游 Triton 的 fp8 路径比 bf16 **慢 30–60%**:省的是带宽(小 batch 根本不缺),付的是 fp8→bf16 转换 + 乘 scale 的指令
+(每块 2×128×128 个元素,恰好加在串行链上)。

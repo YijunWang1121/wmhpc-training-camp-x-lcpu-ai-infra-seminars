@@ -1,0 +1,9 @@
+bf16: per (req,kvh): FLOP=16.78 M, KV bytes=1.000 MiB, total bytes=1.008 MiB, AI=15.9 FLOP/B
+fp8: per (req,kvh): FLOP=16.78 M, KV bytes=0.500 MiB, total bytes=0.508 MiB, AI=31.5 FLOP/B
+ridge point bf16: 281 FLOP/B; fp8: 562 FLOP/B; CUDA-core fp32: 10 FLOP/B
+b= 1: bytes=    4 MiB  t_HBM=  0.52 us  t_tensorcore=0.030 us  t_CUDAcore_fp32= 0.84 us
+b= 4: bytes=   16 MiB  t_HBM=  2.10 us  t_tensorcore=0.119 us  t_CUDAcore_fp32= 3.36 us
+b= 8: bytes=   32 MiB  t_HBM=  4.19 us  t_tensorcore=0.239 us  t_CUDAcore_fp32= 6.71 us
+b=16: bytes=   64 MiB  t_HBM=  8.39 us  t_tensorcore=0.477 us  t_CUDAcore_fp32=13.42 us
+b=32: bytes=  128 MiB  t_HBM= 16.78 us  t_tensorcore=0.954 us  t_CUDAcore_fp32=26.84 us
+b=64: bytes=  256 MiB  t_HBM= 33.55 us  t_tensorcore=1.909 us  t_CUDAcore_fp32=53.69 us

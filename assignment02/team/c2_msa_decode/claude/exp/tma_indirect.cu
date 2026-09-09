@@ -16,6 +16,7 @@
 #define CK(x) do{cudaError_t e=(x); if(e!=cudaSuccess){printf("CUDA err %s @%d: %s\n",#x,__LINE__,cudaGetErrorString(e)); exit(1);} }while(0)
 constexpr int PAGE=128, HD=128, ROW=2*HD, KVH=4, TOPK=16;
 constexpr uint32_t BLK_BYTES = PAGE*ROW*2;  // 65536
+constexpr int NS=3;  // smem stages
 
 __device__ __forceinline__ uint32_t smem_u32(const void* p){ return (uint32_t)__cvta_generic_to_shared(p); }
 __device__ __forceinline__ void mbar_init(uint64_t* b, int cnt){ asm volatile("mbarrier.init.shared::cta.b64 [%0], %1;" :: "r"(smem_u32(b)), "r"(cnt)); }
@@ -38,13 +39,13 @@ __global__ void __launch_bounds__(128) k_load(const __grid_constant__ CUtensorMa
   __shared__ __align__(8) uint64_t bar[TOPK];
   const int t = blockIdx.x % a.total_q, kh = blockIdx.x / a.total_q;
   const int req = t;  // dql = 1
-  if(threadIdx.x==0){ for(int i=0;i<a.nload;i++) mbar_init(&bar[i],1); asm volatile("fence.proxy.async.shared::cta;"); }
+  if(threadIdx.x==0){ for(int i=0;i<NS;i++) mbar_init(&bar[i],1); asm volatile("fence.proxy.async.shared::cta;"); }
   __syncthreads();
   long long t0 = clock64();
   // two-level indirection: topk slot -> logical block -> physical page (scalar loads by thread 0)
   if(MODE!=2){
     if(threadIdx.x==0){
-      for(int i=0;i<a.nload;i++){
+      for(int i=0;i<min(a.nload,NS);i++){
         int blk = a.topk[((size_t)kh*a.total_q + t)*TOPK + i];
         int page = a.bt[(size_t)req*a.bt_stride + blk];
         unsigned char* dst = smem_raw + (size_t)i*BLK_BYTES;
@@ -53,21 +54,25 @@ __global__ void __launch_bounds__(128) k_load(const __grid_constant__ CUtensorMa
         else bulk_load_1d(dst, a.kv + ((size_t)page*KVH + kh)*PAGE*ROW, BLK_BYTES, &bar[i]);
       }
     }
-    for(int i=0;i<a.nload;i++) mbar_wait(&bar[i], 0);
+    // stream: wait stage i%NS, then (thread 0) refill it with block i+NS
+    for(int i=0;i<a.nload;i++){ int st=i%NS; mbar_wait(&bar[st], (i/NS)&1); __syncthreads();
+      if(threadIdx.x==0 && i+NS<a.nload){ int j=i+NS; int blk=a.topk[((size_t)kh*a.total_q+t)*TOPK+j]; int page=a.bt[(size_t)req*a.bt_stride+blk];
+        unsigned char* dst=smem_raw+(size_t)st*BLK_BYTES; mbar_expect_tx(&bar[st],BLK_BYTES);
+        if(MODE==0) tma_load_4d(dst,&map,&bar[st],0,0,kh,page); else bulk_load_1d(dst,a.kv+((size_t)page*KVH+kh)*PAGE*ROW,BLK_BYTES,&bar[st]); } }
   } else {
     for(int i=0;i<a.nload;i++){
       int blk = a.topk[((size_t)kh*a.total_q + t)*TOPK + i];
       int page = a.bt[(size_t)req*a.bt_stride + blk];
       const int4* src = (const int4*)(a.kv + ((size_t)page*KVH + kh)*PAGE*ROW);
-      int4* dst = (int4*)(smem_raw + (size_t)i*BLK_BYTES);
+      int4* dst = (int4*)(smem_raw + (size_t)(i%NS)*BLK_BYTES);
       for(int j=threadIdx.x; j<BLK_BYTES/16; j+=blockDim.x) dst[j] = src[j];
+      __syncthreads();
     }
     __syncthreads();
   }
   long long t1 = clock64();
-  // checksum all loaded bytes (as bf16 -> float)
   float s=0.f; const __nv_bfloat16* sm=(const __nv_bfloat16*)smem_raw;
-  for(int j=threadIdx.x; j<a.nload*PAGE*ROW; j+=blockDim.x) s += __bfloat162float(sm[j]);
+  for(int i=0;i<min(a.nload,NS);i++) for(int j=threadIdx.x; j<PAGE*ROW; j+=blockDim.x) s += __bfloat162float(sm[(size_t)i*PAGE*ROW+j]);
   __shared__ float red[128]; red[threadIdx.x]=s; __syncthreads();
   if(threadIdx.x==0){ float tot=0; for(int i=0;i<128;i++) tot+=red[i]; a.out_sum[blockIdx.x]=tot; a.cycles[blockIdx.x]=t1-t0; }
 }
@@ -89,7 +94,7 @@ int main(int argc, char** argv){
     for(int i=0;i<TOPK;i++) topk[((size_t)kh*total_q+t)*TOPK+i]=c[i]; }
   // reference checksums on host
   std::vector<float> ref((size_t)total_q*KVH);
-  for(int kh=0;kh<KVH;kh++) for(int t=0;t<total_q;t++){ double s=0; for(int i=0;i<nload;i++){ int blk=topk[((size_t)kh*total_q+t)*TOPK+i]; int page=bt[t*nblocks_per_req+blk];
+  for(int kh=0;kh<KVH;kh++) for(int t=0;t<total_q;t++){ double s=0; int ns=std::min(nload,NS); for(int st=0;st<ns;st++){ int i=st; while(i+NS<nload) i+=NS; int blk=topk[((size_t)kh*total_q+t)*TOPK+i]; int page=bt[t*nblocks_per_req+blk];
       const __nv_bfloat16* p=&kv[((size_t)page*KVH+kh)*PAGE*ROW]; for(int j=0;j<PAGE*ROW;j++) s+=__bfloat162float(p[j]); } ref[kh*total_q+t]=(float)s; }
 
   __nv_bfloat16* d_kv; int32_t *d_topk,*d_bt; float* d_sum; long long* d_cyc;
@@ -106,7 +111,7 @@ int main(int argc, char** argv){
   if(r!=CUDA_SUCCESS){ const char* s; cuGetErrorString(r,&s); printf("cuTensorMapEncodeTiled failed: %s\n", s); return 1; }
 
   Args a{d_kv, d_topk, d_bt, nblocks_per_req, total_q, d_sum, d_cyc, nload};
-  size_t smem = (size_t)nload*BLK_BYTES;
+  size_t smem = (size_t)std::min(nload,NS)*BLK_BYTES;
   auto run=[&](int mode, const char* name){
     void (*k)(const CUtensorMap, Args) = mode==0?k_load<0>: mode==1?k_load<1>: k_load<2>;
     CK(cudaFuncSetAttribute(k, cudaFuncAttributeMaxDynamicSharedMemorySize, (int)smem));

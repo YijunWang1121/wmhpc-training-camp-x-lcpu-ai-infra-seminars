@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c2_msa_decode/claude/exp/e6_fused.py", line 34, in <module>
+    torch.cuda.synchronize()
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/.venv/lib/python3.12/site-packages/torch/cuda/__init__.py", line 1281, in synchronize
+    return torch._C._cuda_synchronize()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.AcceleratorError: CUDA error: unspecified launch failure
+Search for `cudaErrorLaunchFailure' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+The CUDA driver logged these messages, which may provide useful details:
+Returning 719 (CUDA_ERROR_LAUNCH_FAILED) from cuCtxSynchronize_v2
+
+
+/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/.venv/lib/python3.12/site-packages/triton/language/core.py:2625: UserWarning: tl.make_block_ptr is deprecated. Use TensorDescriptor or tl.make_tensor_descriptor instead.
+  warn("tl.make_block_ptr is deprecated. Use TensorDescriptor or tl.make_tensor_descriptor instead.")
