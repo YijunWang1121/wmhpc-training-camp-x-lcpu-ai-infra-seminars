@@ -1,0 +1,9 @@
+per-block cost c_blk -> streaming-kernel time vs Triton, crossover batch
+c_blk=1.4 us [mma.sync, measured (my kernel / Triton per block, 1.1 GHz)] -> crossover at b=32
+   b= 1:  27.4 vs   8.3 | b= 2:  27.4 vs   9.2 | b= 4:  27.4 vs  11.2 | b= 8:  27.4 vs  14.9 | b=16:  27.4 vs  22.0 | b=32:  27.4 vs  43.0 | b=64:  44.5 vs  74.8
+c_blk=0.8 us [load-bound only (TMA 0.8 us/block, MMA free)] -> crossover at b=16
+   b= 1:  17.8 vs   8.3 | b= 2:  17.8 vs   9.2 | b= 4:  17.8 vs  11.2 | b= 8:  17.8 vs  14.9 | b=16:  17.8 vs  22.0 | b=32:  24.7 vs  43.0 | b=64:  44.5 vs  74.8
+c_blk=0.5 us [tcgen05 estimate: 16 async MMA + softmax per block] -> crossover at b=8
+   b= 1:  13.0 vs   8.3 | b= 2:  13.0 vs   9.2 | b= 4:  13.0 vs  11.2 | b= 8:  13.0 vs  14.9 | b=16:  14.9 vs  22.0 | b=32:  24.7 vs  43.0 | b=64:  44.5 vs  74.8
+c_blk=0.3 us [tcgen05 + 2 GHz clock] -> crossover at b=4
+   b= 1:   9.8 vs   8.3 | b= 2:   9.8 vs   9.2 | b= 4:   9.8 vs  11.2 | b= 8:   9.9 vs  14.9 | b=16:  14.9 vs  22.0 | b=32:  24.7 vs  43.0 | b=64:  44.5 vs  74.8

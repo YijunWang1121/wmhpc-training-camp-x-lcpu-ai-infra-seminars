@@ -219,3 +219,10 @@ harness 三组 check 全 PASS(err_ratio 3.2e-3 / 2.8e-3 / 3.2e-3)。
 - → 本机 SM 时钟被固定在 1095 MHz(54% 标称),不随负载提升,无法(无 root)更改。**所有 us 数字都是 1.095 GHz 下的**;
   折算到 2.03 GHz 时钟,计算/延迟受限部分会缩短 ~1.85×,DRAM 部分不变(mem 3996 MHz 正常)。
 - mma_rate 的 320 TFLOPS(bf16 mma.sync)相应是 1.095 GHz 下的数字;换算标称时钟 ≈ 590 TFLOPS,仍只有 tcgen05 峰值的 ~1/4。
+
+## S10 — job 24089/24092:地板探针 + 无 cluster split 版 + scratch padding(`logs/e14_split_final.out`,`logs/e15_final.out`)
+- 地板探针(graph,b=1):空 kernel 0.9 us;索引链(3 次依赖 load)1.8;索引 + 一块 64 KiB TMA 3.3;Triton decode(16 chunks)5.9,merge 2.7。
+- 同结构对比(1 块/CTA + 上游 merge):我的 CTA 7.8 us vs Triton 5.9 → Triton codegen 已接近下限;我多的是 Q 经 smem 中转 + 4-warp 合并。
+- scratch 行 padding(HD+4)消 8-way bank conflict:split16 dec 8.3 → 7.8,cl4s2 15.2 → 14.7。
+- 最终:小 batch 全线输 Triton;cl1s3 在 b≥32 反超(crossover 现象复现)。
+- 决定:(a) 做完并全部通过验收,结论转 (b),证据链写入 REPORT §7;§8 用标定模型解释 16。

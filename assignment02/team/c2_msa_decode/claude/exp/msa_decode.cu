@@ -27,7 +27,8 @@ constexpr int HD = 128, PAGE = 128, ROW = 2 * HD, GQA = 16, TOPK = 16;
 constexpr uint32_t TILE_BYTES = PAGE * 64 * 2;  // one TMA box: 128 rows x 64 bf16 = 16 KiB
 constexpr uint32_t BLK_BYTES = 4 * TILE_BYTES;  // K lo/hi + V lo/hi = 64 KiB
 constexpr int MAX_STAGES = 3;
-constexpr int SCR_WARP = 32 + GQA * HD;  // floats per warp slot in the merge scratch (m16,l16,acc)
+constexpr int SCR_ROW = HD + 4;            // padded acc row (528 B) so the 8 rows a warp writes hit different banks
+constexpr int SCR_WARP = 32 + GQA * SCR_ROW;  // floats per warp slot in the merge scratch (m16,l16,acc)
 
 struct Params {
   const __nv_bfloat16* q;  // [total_q][nheads][128]
@@ -300,8 +301,8 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
 #pragma unroll
     for (int n = 0; n < 16; ++n) {
       const int row = lane >> 2, col = n * 8 + (lane & 3) * 2;
-      *reinterpret_cast<float2*>(a + row * HD + col) = make_float2(acc[n][0], acc[n][1]);
-      *reinterpret_cast<float2*>(a + (row + 8) * HD + col) = make_float2(acc[n][2], acc[n][3]);
+      *reinterpret_cast<float2*>(a + row * SCR_ROW + col) = make_float2(acc[n][0], acc[n][1]);
+      *reinterpret_cast<float2*>(a + (row + 8) * SCR_ROW + col) = make_float2(acc[n][2], acc[n][3]);
     }
   }
   __syncthreads();
@@ -324,7 +325,7 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
       for (int w = 0; w < NWARPS; ++w) {
         const float wt = exp2f(mw[w] - Mu);
         L += wt * scratch[w * SCR_WARP + 16 + row];
-        const float4* a = reinterpret_cast<const float4*>(scratch + w * SCR_WARP + 32 + row * HD + c0);
+        const float4* a = reinterpret_cast<const float4*>(scratch + w * SCR_WARP + 32 + row * SCR_ROW + c0);
         const float4 x = a[0], y = a[1];
         o[it][0] += wt * x.x; o[it][1] += wt * x.y; o[it][2] += wt * x.z; o[it][3] += wt * x.w;
         o[it][4] += wt * y.x; o[it][5] += wt * y.y; o[it][6] += wt * y.z; o[it][7] += wt * y.w;
@@ -333,7 +334,7 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
       mw[0] = M; mw[1] = L;
       __syncthreads();  // all reads of the NWARPS slots done before overwriting slot 0 (uniform: every thread reaches it)
       if ((idx & 15) == 0) { scratch[row] = mw[0]; scratch[16 + row] = mw[1]; }
-      float4* a0 = reinterpret_cast<float4*>(scratch + 32 + row * HD + c0);
+      float4* a0 = reinterpret_cast<float4*>(scratch + 32 + row * SCR_ROW + c0);
       a0[0] = make_float4(o[it][0], o[it][1], o[it][2], o[it][3]);
       a0[1] = make_float4(o[it][4], o[it][5], o[it][6], o[it][7]);
     } else {
@@ -384,7 +385,7 @@ __device__ __forceinline__ void decode_body(const CUtensorMap& map, const Params
             const float* rs = cluster.map_shared_rank(scratch, r);
             const float wt = exp2f(mr[r] - Mu);
             L += wt * rs[16 + row];
-            const float4* a = reinterpret_cast<const float4*>(rs + 32 + row * HD + c0);
+            const float4* a = reinterpret_cast<const float4*>(rs + 32 + row * SCR_ROW + c0);
             const float4 x = a[0], y = a[1];
             oo[0] += wt * x.x; oo[1] += wt * x.y; oo[2] += wt * x.z; oo[3] += wt * x.w;
             oo[4] += wt * y.x; oo[5] += wt * y.y; oo[6] += wt * y.z; oo[7] += wt * y.w;

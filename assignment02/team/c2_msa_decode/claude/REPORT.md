@@ -1,6 +1,7 @@
 # C2:MiniMax M3 MSA decode,小 batch 这一半 — 报告(Claude 独立版本,分支 `c2-claude`)
 
 所有数字来自本机 **NVIDIA B300 SXM6 AC**(148 SM,cc 10.3,HBM3e 268 GB)实测;CUDA 13.0,torch 2.14,Triton 3.8。
+**注意本机 SM 时钟被固定在 1095 MHz(标称 2032),不随负载提升(§7.0 实测);所有 us 都是这个时钟下的,memory 时钟正常(3996 MHz)。**
 原始日志在 `logs/`,nsys/ncu 导出在 `profiles/`,逐 session 记录在 `LOG.md`,文档原文摘录在 `DOCS.md`,
 验收方案在 `ACCEPTANCE.md`。复现命令见 §9。
 
@@ -13,7 +14,7 @@
 | 讨论点 2 融合 | 值得:merge kernel 在 b=1 占 1/3。cluster + DSMEM 合并可行且已实现(`exp/msa_decode.cu`),文档依据见 DOCS.md;cluster=16 会因 GPC 内凑不齐 SM 而串行化,只可用 ≤4。 |
 | 讨论点 3 TMA | **能表达**:tensormap 坐标是运行期 `.s32` 寄存器,两级间接寻址算出 page 后作为最高维坐标即可(实测校验和一致,单块 0.8 us);无需 gather 模式;PTX 9.4 的 `.override::global_address` 更直接但 CUDA 13.0 不可用;1-D `cp.async.bulk` 也可(块内 64 KiB 连续)。 |
 | 讨论点 4 FP8 scale | 标量 scale 折进 Q(host)+ 输出(epilogue),kernel 零成本、与上游口径逐位一致;per-token scale 只能在 kernel 内,但应加在 S/P tile 上而不是反量化 K/V。上游 Triton 的 fp8 路径比 bf16 **更慢**(转换开销 > 省下的带宽)。 |
-| 挑战 | 选 **(a)**:CUDA 融合 kernel(TMA + mma.sync + cluster/DSMEM 合并)。数字见 §7。 |
+| 挑战 | 先按 (a) 做了完整一轮(CUDA 融合 kernel:TMA + mma.sync + cluster/DSMEM 合并,4 个版本,全部过验收),最好配置 b=1 14.7 us vs Triton 8.2 us,**没赢**;把这一轮的测量变成 (b) 的证据链:小 batch 收益上限 ≈ 1.5×(硬地板 3.3 us / 8.2 us),工程成本 = 一条 Blackwell 专有 fmha 路径。**结论 (b)**,数字见 §7。 |
 | crossover=16 | 见 §8:CUTLASS 路径每 (req, kvh) 一个 CTA 流式吃 16 块,固定开销大但每块几乎无串行延迟;Triton 靠 split-K 把 16 块摊到 16 个 CTA 抢并行度。b×4 个 CTA 在 b≥16 时才 ≥ 64 → 用得上足够 SM,同时 Triton 的每 CTA 块数从 1 涨到 4、串行链变长。两条线在 b≈16 交叉。 |
 
 ## 1. 对象与形状
@@ -142,3 +143,129 @@ b=1 的 8.2 us = decode 固定 3.6 + 每块链 2.3 × 1 + merge 2.7(merge 只读
   这与讨论点 1 一致:fp8 把 AI 翻倍(16→32 FLOP/B)对一个 latency-bound 的 kernel 毫无帮助。
 - CUTLASS 路径(`msa_cutlass_sparse_decode.py`)正是走"折进标量"这条:`q_scale/k_scale/v_scale/o_scale` 作为 float 传入
   `fmha_sm100`,且要求 `query_fp8`——用 fp8 MMA,scale 全在 epilogue。
+
+## 8. crossover 为什么在 16(挑战 (a)/(b) 共同要求)
+
+上游注释:"Kernel benchmarks put the CUTLASS crossover at 16 requests for TP1 and TP4"(`_MIN_CUTLASS_BATCH_SIZE = 16`)。
+本机没有 fmha_sm100 的构建(需 vLLM third_party + FP8 KV),不能直接测 CUTLASS;但两条路径的**结构**可以在本机复现并标定:
+
+**两种结构。**
+- Triton split-K:每 (token, kv_head) 起 `chunks` 个 CTA,每个 CTA 串行吃 16/chunks 块;`chunks = 2^⌊log2 min(16, 256/(4b))⌋`。
+  b≤4 每 CTA 1 块,b=8 两块,b=16 四块,b=32 八块,b=64 十六块——**batch 越大,每 CTA 的串行链越长**,
+  时间 ≈ 3.6 + 2.3 × (块/CTA) + merge(§2.2),所以 b 从 16 到 64 时间从 22 → 75 us(每块 2.3 us 是它的斜率)。
+- CUTLASS `fmha_sm100` decode(`sparse_kernel_mode="decode"`):plan 一次,每 (req, kv_head) 一个 CTA/warp-group 用 TMA 流式
+  吃完 16 块,tcgen05 异步 MMA,不 split、无 merge。特点:**固定开销大**(plan、tensormap、64/128 行 tile 只填 16 行、
+  epilogue),但每块的边际成本很低(MMA 由单线程异步发射,SM 只做 softmax),且 b 增大时时间几乎不涨——直到 4b 个 CTA 的
+  聚合带宽撞到 HBM。
+
+**本机标定。** 我的 CUDA kernel cl1s3(一个 CTA 流 16 块、3 级 TMA ring)就是"流式结构"用 legacy mma.sync 的实现:
+b=1..16 恒 27–28 us(平),b=32 34 us,b=64 65 us(带宽项接管);Triton 8.3 → 22 → 43 → 75。**两条线在 b≈24–32 交叉**——
+crossover 现象被复现,只是位置偏右,因为我的每块成本 c_blk ≈ 1.4 us(mma.sync + ldmatrix + softmax 串行发射,§7 消融)。
+
+**模型**(`logs/crossover_model.txt`):`T_stream(b) = T_fix + max(16·c_blk, b·4 MiB / BW_eff(b))`,T_fix = launch 2.2 + 索引链 1.8 +
+epilogue 1.0(§7 的实测下限),BW_eff = min(4b × 220 GB/s, 0.85 × 8 TB/s)(TMA 流式实验的单 CTA 带宽);Triton 用实测表。
+| c_blk(每块边际成本) | 含义 | crossover |
+|--:|--|--:|
+| 1.4 us | mma.sync,本机实测(我的 kernel / Triton 的每块成本) | b≈32 |
+| 0.8 us | 只剩 TMA 载入延迟(MMA 完全隐藏) | **b≈16** |
+| 0.5 us | tcgen05:每块 16 条异步 MMA + softmax | b≈8 |
+| 0.3 us | tcgen05 + 2 GHz 时钟 | b≈4 |
+上游的 16 落在 "MMA 基本被异步化、每块成本 ≈ 载入延迟" 这一档,与 fmha_sm100 的实现方式一致;它的 T_fix 比我的模型更大
+(plan + fp8 转换 + 64 行 tile),又把 crossover 往右推回 16 附近。
+
+**一句话:** crossover 不是"tensor core 在 b<16 时不划算",而是 **固定开销大、边际成本小的流式 kernel** 对
+**固定开销小、边际成本随 b 线性涨的 split-K kernel**——前者的平线在 b·(4 MiB/BW) 超过 16·c_blk 之前一直平,
+后者从 b=8 起每翻倍 batch 每 CTA 多串一倍的块。交点位置只取决于 c_blk 与 T_fix,上游测出来是 16。
+此外上游 CUTLASS 路径只支持 FP8 KV,而 Triton 的 FP8 路径比 bf16 慢 30–60%(§6),这也把交点往左拉。
+
+## 7. 挑战:先做 (a),再用它的数据论证 (b)
+
+### 7.0 两个影响一切数字的环境事实(先说)
+- **SM 时钟固定 1095 MHz**(`exp/clock_probe.cu`:globaltimer 对 clock64,冷/热/重载后都是 1094–1095 MHz;`nvidia-smi` 报
+  Applications Clocks 2032 但当前 1095,无降频事件)。计算/延迟受限部分若在 2.03 GHz 会快 ~1.85×,DRAM 部分不变。
+- **B300 上 legacy `mma.sync.m16n8k16` 只有 ~8 cycle/条/SMSP ≈ 320 TFLOPS 全卡**(`exp/mma_rate.cu`;fp8 mma.sync 1200,
+  FFMA 38);Triton 3.8 在 sm_103 上就是用它。tcgen05 峰值是它的 ~7×,这是 CUTLASS 路径和 Triton 路径的根本差别。
+
+### 7.1 做了什么(`exp/msa_decode.cu`,约 400 行 CUDA)
+- 一个 (token, kv_head) = 一个工作单元;`CL` 个 CTA 组成 cluster 分 16 块;CTA 内 `STAGES` 个 warp-group(各 4 warps)各自独占
+  一个 64 KiB smem stage、轮流吃块;每 warp 32 个 key 的在线 softmax;warp 状态经 smem 合并,CTA 状态经 **DSMEM** 合并
+  (rank 0 写输出,两次 `cluster.sync`)。
+- 载入:4-D tensormap + `cp.async.bulk.tensor.4d`,page 是运行期坐标(§5),128B swizzle,mbarrier `complete_tx` 计数。
+- MMA:`mma.sync.m16n8k16 bf16`,Q 常驻寄存器(32 reg),K 用 `ldmatrix`、V 用 `ldmatrix.trans`,P 从 C 布局直接打包成 A 布局。
+- 另有两个对照实现:(i) **无 cluster 的 split-K**(每 CTA 1/2/4 块,partial 用 Triton 的格式 + 上游 merge kernel);
+  (ii) **改良 Triton**(`exp/triton_v2.py`:last-CTA 原子合并去掉 merge kernel,num_warps 8)。
+- 版本史(LOG.md S4–S9):v1 单 group;v2 双 group 共享 ring → **mbarrier 相位竞态**(sanitizer 定位,cl4s1 崩溃);
+  v3 每 group 独占 stage;v3.1 合并 scratch 加 padding 消 8-way bank conflict;每一版都过 ACCEPTANCE 全矩阵。
+
+### 7.2 验收(ACCEPTANCE.md,`logs/e12_final.out`,`logs/e15_final.out`)
+- 形状矩阵 b∈{1,2,3,4,8,16} × seq∈{50–300, 1k–8k, 32k} × dql∈{1,2} × 3 seed × 8 配置 = 864 次比对,**全部 PASS**:
+  对 fp32 参照 err_ratio 2.4e-3–2.6e-3(Triton 2.5e-3–3.3e-3,**新 kernel 更准**,因为 P 只做一次 bf16 舍入、acc 全程 fp32);
+  逐 head 最大 3.6e-3;对 Triton 逐元素 max|Δ| ≤ 9.8e-4(阈 1.0e-2);无 NaN/Inf(含 real_topk<16、尾块、dql=2)。
+- 无 cluster split-K 版本、改良 Triton 版本同样全 PASS,且 split 版的 last-CTA 计数器在 graph 重放下自复位正确。
+
+### 7.3 性能(graph,us;`logs/e15_final.out`、`logs/e14_split_final.out`、`logs/e12_final.out`)
+| b | Triton | cl4s2(最好的融合配置) | cl2s2 | cl1s3(流式) | 我的 CTA + Triton merge(split16) | 改良 Triton(fuse, nw8) |
+|--:|--:|--:|--:|--:|--:|--:|
+| 1 | **8.2** | 14.7 | 17.9 | 26.0 | 10.6 | 10.2 |
+| 4 | **11.2** | 15.0 | 18.2 | 26.7 | 13.9 | 17.1 |
+| 8 | **14.8** | 16.2 | 18.3 | 26.9 | 22.5 | 16.1 |
+| 16 | **22.1** | 32.0 | 20.7 | 27.8 | 38.8 | 24.6 |
+| 32 | 42.9 | 66.3 | 44.3 | **32.9** | 67.6 | 45.3 |
+| 64 | 74.4 | 128.2 | 85.4 | **64.0** | – | 81.1 |
+- **小 batch 全线输给 Triton**;流式配置 cl1s3 在 b≥32 反超(§8 的 crossover 现象)。
+- eager 下融合 kernel 22 us vs Triton 32 us(少一次 Python launch),但生产用 graph,这不算数。
+
+### 7.4 为什么输——每一项都量化了(LOG.md S8,`logs/e13_ablation_final.out`,kernel 内 clock64 分相)
+| 项 | cycles(≈ns @1.095 GHz) | 说明 |
+|--|--:|--|
+| launch(空 kernel,graph) | 0.9–1.6 us | 与 Triton 相同 |
+| 索引链 seq_lens→topk→block_table | +0.9 us | 三次依赖 L2 往返,与 Triton 相同 |
+| 一块 TMA 载入 | +1.5 us | 单块 0.8 us + mbarrier;`index+TMA` 探针 3.3 us @b=1 |
+| **每块 compute(4 warps)** | **1.4k** | 消融:MMA 0.2k、ldmatrix 0.35k、exp 0.1k、其余(掩码/max/shuffle/重缩放/地址)0.7k;~400 条指令串行发射 |
+| 4-warp smem 合并 + 写 partial | 1.0–2.4k | 8-way bank conflict 修掉后仍 ~1k |
+| cluster 合并(2× cluster.sync + DSMEM) | **3.7k** | 比 Triton 整个 merge kernel(2.7 us)还贵 |
+| 多 warp-group | 每组每块 1.4k → 2.1k | 共享 SMSP,总 compute 只降 2×,而 epilogue 涨到 7.5k |
+- 同一"1 块/CTA"结构下:我的 decode CTA 7.8 us vs Triton 5.9 us(`split16` 列):Triton 的 codegen 已经很接近这个结构在
+  这块卡上的下限;我多出的 ~2 us 是 Q 经 smem 中转 + 4 warp 合并。
+- cluster=16(1 块/CTA + DSMEM 合并,理论最优形态)因 GPC 内凑 16 个空 SM 而串行化(b=1 40 us),cluster ≤4 又把每 CTA
+  串行块数抬到 ≥4。**"1 块/CTA" 与 "cluster 合并" 在本卡上互斥。**
+
+### 7.5 (b) 的证据链
+**收益上限(roofline + 实测地板)。** b=1 一步的硬地板 = launch 0.9 + 索引链 0.9 + 一块载入 1.5 = **3.3 us**(探针实测,任何
+1 块/CTA 的 kernel 都逃不掉),再加至少一块 compute 1.3 us、一次合并 ≥1 us → **≥5.6 us**;Triton 8.2 us → 上限 **≈1.5×**。
+HBM roofline(4 MiB / 8 TB/s = 0.5 us)在这里没有意义:它假设 148 个 SM 一起拉带宽,而 b=1 只有 64 个块任务。
+b=4:地板 4.1 + 1.3 + 1 = 6.4 vs 11.2 → ≈1.7×;b=16:Triton 22 us 里 4 块/CTA 的串行链 9 us 是可压的,但 CUTLASS 已接管。
+换算到端到端:MiniMax M3 每个 decode step 有 ~80 层 attention(以 MoE 主体 ~15–25 ms/step 计),
+每层省 2–3 us → **每 step 省 0.2 ms ≈ 1%**。这是收益的天花板,还没扣掉 graph 里其它 kernel 的重叠。
+
+**工程成本(从 CUTLASS 路径复杂度估 + 本轮实测)。**
+- 要越过"1.5×"这条线只有一条路:让每块 compute 从 1.4k cycle 降到 ~0.3k——即 **tcgen05 异步 MMA + TMEM 累加 + 单线程发射**,
+  这正是 `fmha_sm100` 的结构(`msa_cutlass_sparse_decode.py` 316 行只是它的 Python 胶水:plan cache、65536 行预分配、
+  graph-stable 地址、`_update_runtime_metadata_kernel`,还要求 fp8 KV、page=128、topk=16、dql≤32、head 几何固定)。
+- 本轮 400 行 mma.sync 版本已经踩到:mbarrier 相位语义(竞态 + 硬件错误)、cluster 调度粒度、smem bank conflict、
+  DSMEM 合并开销;换成 tcgen05 要再加 TMEM 分配/布局、smem 描述符 + swizzle 匹配、P 回写 TMEM 作 A 操作数、
+  warp 专化。上游把这条路径做成 opt-in 且 b≥16 才开,说明他们也没在小 batch 拿到正收益。
+- **上限 ~1.5× 的 kernel(端到端 ~1%)vs 一条 Blackwell 专有 fmha 路径的维护成本:不值得。** 小 batch 继续走 Triton split-K,
+  是对的。真要在小 batch 榨一点,低风险的是:(1) 让 Triton 的 K/V 载入两级缓冲、与计算重叠(每块 2.3 → ~1.5 us,b≥8 受益);
+  (2) 用 PDL(`launch_pdl`,上游代码里已有 `USE_PDL` 路径)把 merge 的 launch 与 decode 的尾巴重叠,省 ~1 us。
+
+## 9. 复现
+```
+cd team/c2_msa_decode/claude
+# 编译(登录节点即可)
+nvcc -O3 -std=c++17 -gencode arch=compute_100f,code=sm_100f --shared -Xcompiler -fPIC -o exp/libmsa_decode.so exp/msa_decode.cu -lcuda
+nvcc -O3 -std=c++17 -gencode arch=compute_100f,code=sm_100f -o exp/tma_indirect exp/tma_indirect.cu -lcuda
+nvcc -O3 -std=c++17 -gencode arch=compute_100f,code=sm_100f -o exp/mma_rate exp/mma_rate.cu
+nvcc -O3 -gencode arch=compute_100f,code=sm_100f -o exp/clock_probe exp/clock_probe.cu
+# GPU(每个 ≤25 min,单卡):
+sbatch -G 1 --time=00:20:00 exp/job_e1.sh     # 基线测量 E1/E2/E5
+sbatch -G 1 --time=00:45:00 exp/job_e3.sh     # nsys + ncu
+sbatch -G 1 --time=00:10:00 exp/job_tma.sh    # 讨论点 3 TMA 间接寻址
+sbatch -G 1 --time=00:25:00 exp/job_e15.sh    # 融合 kernel 验收 + 性能;split 版;地板探针
+sbatch -G 1 --time=00:15:00 exp/job_e13.sh    # 消融(需先按 job 脚本里的宏编译各变体)
+sbatch -G 1 --time=00:15:00 exp/job_e12.sh    # 改良 Triton
+sbatch -G 1 --time=00:05:00 exp/job_mma.sh    # mma.sync 吞吐
+sbatch -G 1 --time=00:05:00 exp/job_clock.sh  # SM 时钟
+python3 exp/e8_fp8scale.py                    # (GPU) 讨论点 4;logs/crossover_model.txt 由 REPORT §8 的模型脚本生成
+```
+注意:B300 是 cc 10.3,cubin 必须用 `sm_100f`(family)而不是 `sm_100a`(LOG.md S3 的教训)。
