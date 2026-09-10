@@ -1,0 +1,24 @@
+
+=== T=8192 H=96 (K2 grid = 96 CTAs, 512 chunks each) ===
+  stock          K1    458.5 us   K2   1290.3 us  ( 2520.1 ns =      3 cyc per chunk @1095MHz)   other    8.9 us
+  notma          K1    458.4 us   K2    916.0 us  ( 1789.0 ns =      2 cyc per chunk @1095MHz)   other    8.8 us
+  notma_noP1     K1    457.8 us   K2    630.7 us  ( 1231.8 ns =      1 cyc per chunk @1095MHz)   other    8.8 us
+  notma_noP6     K1    457.6 us   K2    555.9 us  ( 1085.8 ns =      1 cyc per chunk @1095MHz)   other    8.7 us
+  notma_noP34    K1    458.3 us   K2    753.8 us  ( 1472.2 ns =      2 cyc per chunk @1095MHz)   other    8.8 us
+  noP6           K1    457.5 us   K2    827.7 us  ( 1616.5 ns =      2 cyc per chunk @1095MHz)   other    8.9 us
+
+=== T=8192 H=12 (K2 grid = 12 CTAs, 512 chunks each) ===
+  stock          K1     67.1 us   K2   1276.5 us  ( 2493.2 ns =      3 cyc per chunk @1095MHz)   other    4.9 us
+  notma          K1     67.3 us   K2    914.6 us  ( 1786.3 ns =      2 cyc per chunk @1095MHz)   other    4.7 us
+  notma_noP1     K1     66.9 us   K2    621.0 us  ( 1212.9 ns =      1 cyc per chunk @1095MHz)   other    4.7 us
+  notma_noP6     K1     67.0 us   K2    557.1 us  ( 1088.0 ns =      1 cyc per chunk @1095MHz)   other    4.7 us
+  notma_noP34    K1     67.2 us   K2    739.1 us  ( 1443.5 ns =      2 cyc per chunk @1095MHz)   other    4.8 us
+  noP6           K1     67.0 us   K2    824.2 us  ( 1609.7 ns =      2 cyc per chunk @1095MHz)   other    4.9 us
+
+=== T=32768 H=12 (K2 grid = 12 CTAs, 2048 chunks each) ===
+  stock          K1    235.7 us   K2   5079.4 us  ( 2480.2 ns =      3 cyc per chunk @1095MHz)   other    5.3 us
+  notma          K1    236.5 us   K2   3650.6 us  ( 1782.5 ns =      2 cyc per chunk @1095MHz)   other    5.2 us
+  notma_noP1     K1    236.0 us   K2   2481.3 us  ( 1211.6 ns =      1 cyc per chunk @1095MHz)   other    5.2 us
+  notma_noP6     K1    236.6 us   K2   2225.6 us  ( 1086.7 ns =      1 cyc per chunk @1095MHz)   other    5.2 us
+  notma_noP34    K1    236.5 us   K2   2956.4 us  ( 1443.6 ns =      2 cyc per chunk @1095MHz)   other    5.2 us
+  noP6           K1    235.9 us   K2   3258.1 us  ( 1590.9 ns =      2 cyc per chunk @1095MHz)   other    5.4 us

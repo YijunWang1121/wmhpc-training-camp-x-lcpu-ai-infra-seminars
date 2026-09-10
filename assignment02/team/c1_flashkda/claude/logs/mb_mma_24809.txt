@@ -1,0 +1,38 @@
+device NVIDIA B300 SXM6 AC cc 10.3 SMs 148
+== T1/T2 mma.sync (register-resident operands, pure tensor pipe) ==
+   mma.sync m16n8k16 dependent   NACC=1 warps/CTA= 1 CTAs=  1 :  20.81 cyc/HMMA/warp  ->     98 MAC/cyc/SM
+   mma.sync m16n8k16 dependent   NACC=1 warps/CTA= 4 CTAs=  1 :  20.79 cyc/HMMA/warp  ->    394 MAC/cyc/SM
+   mma.sync m16n8k16 independent NACC=4 warps/CTA= 1 CTAs=  1 :   8.39 cyc/HMMA/warp  ->    244 MAC/cyc/SM
+   mma.sync m16n8k16 independent NACC=4 warps/CTA= 4 CTAs=  1 :   8.38 cyc/HMMA/warp  ->    977 MAC/cyc/SM
+   mma.sync m16n8k16 independent NACC=8 warps/CTA= 4 CTAs=  1 :   8.19 cyc/HMMA/warp  ->   1000 MAC/cyc/SM
+   mma.sync m16n8k16 independent NACC=8 warps/CTA= 8 CTAs=  1 :  16.09 cyc/HMMA/warp  ->   1018 MAC/cyc/SM
+   mma.sync m16n8k16 independent NACC=8 warps/CTA=16 CTAs=  1 :  32.14 cyc/HMMA/warp  ->   1020 MAC/cyc/SM
+   mma.sync m16n8k16 independent NACC=8 warps/CTA=16 CTAs=148 :  32.14 cyc/HMMA/warp  ->   1019 MAC/cyc/SM
+== T3-T5 tcgen05.mma kind::f16 bf16->f32, INTER (no-swizzle) smem layouts ==
+   MISMATCH [0,0] got 3 want 13
+   MISMATCH [0,1] got -14 want -42
+   MISMATCH [0,2] got 78 want 6
+G1 M128 N16 K128 (S^T@k_d^T)       correctness: FAIL
+G2 M128 N16 K16  (u^T@INV^T)       correctness: PASS
+   latency (issue chain+commit+wait) =   265.0 cyc   throughput 1 SM =   50.2 cyc/instr-chain (   653 MAC/cyc)   all-SM =   50.2 cyc (   653 MAC/cyc/SM)
+G3 M128 N128 K16 (U^T@k_r) Kmaj    correctness: PASS
+   latency (issue chain+commit+wait) =   265.0 cyc   throughput 1 SM =   64.1 cyc/instr-chain (  4088 MAC/cyc)   all-SM =   64.1 cyc (  4088 MAC/cyc/SM)
+   MISMATCH [0,0] got 12 want 22
+   MISMATCH [0,1] got -16 want -21
+   MISMATCH [0,2] got 34 want -8
+G3 M128 N128 K16 B MN-major(a)     correctness: FAIL
+G3 M128 N128 K16 B MN-major(b)     correctness: PASS
+   latency (issue chain+commit+wait) =   265.0 cyc   throughput 1 SM =   64.1 cyc/instr-chain (  4088 MAC/cyc)   all-SM =   64.1 cyc (  4088 MAC/cyc/SM)
+   MISMATCH [0,0] got 3 want 13
+   MISMATCH [0,1] got -14 want -42
+   MISMATCH [0,2] got 78 want 6
+ref M128 N128 K128                 correctness: FAIL
+ref M128 N256 K16                  correctness: PASS
+   latency (issue chain+commit+wait) =   311.0 cyc   throughput 1 SM =  128.1 cyc/instr-chain (  4092 MAC/cyc)   all-SM =  128.1 cyc (  4092 MAC/cyc/SM)
+   MISMATCH [0,0] got -2 want 0
+   MISMATCH [0,1] got -99 want -49
+   MISMATCH [0,2] got 25 want 32
+G1' M64 N16 K128                   correctness: FAIL
+== T6 tcgen05.ld 128 lanes x C fp32 (4 warps) ==
+   tcgen05.ld 32x32b x16 chunks,  16 cols:   217.1 cyc per 128x16 tile ( 37.7 B/cyc)
+   tcgen05.ld 32x32b x16 chunks, 128 cols:   658.1 cyc per 128x128 tile ( 99.6 B/cyc)

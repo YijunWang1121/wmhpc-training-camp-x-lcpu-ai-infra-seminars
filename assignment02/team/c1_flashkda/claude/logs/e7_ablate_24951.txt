@@ -1,0 +1,16 @@
+using /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/k2tc/k2_tc2.cpython-312-x86_64-linux-gnu.so
+k2_tc smem bytes: 84992
+=== T=8192 H=96 @ 1095 MHz ===
+  FlashKDA K2 (mma.sync)         1277.4 us    2732 cyc/chunk
+  k2_tc2                         2086.3 us    4462 cyc/chunk   (0.61x vs mma.sync)
+  k2_tc2_noE1                    1950.1 us    4171 cyc/chunk   (0.66x vs mma.sync)
+  k2_tc2_noE3                    1981.4 us    4238 cyc/chunk   (0.64x vs mma.sync)
+  k2_tc2_noE4                    1252.7 us    2679 cyc/chunk   (1.02x vs mma.sync)
+  k2_tc2_noE134                   950.1 us    2032 cyc/chunk   (1.34x vs mma.sync)
+=== T=8192 H=12 @ 1095 MHz ===
+  FlashKDA K2 (mma.sync)         1267.6 us    2711 cyc/chunk
+  k2_tc2                         2028.4 us    4338 cyc/chunk   (0.62x vs mma.sync)
+  k2_tc2_noE1                    1903.8 us    4072 cyc/chunk   (0.67x vs mma.sync)
+  k2_tc2_noE3                    1924.6 us    4116 cyc/chunk   (0.66x vs mma.sync)
+  k2_tc2_noE4                    1233.3 us    2638 cyc/chunk   (1.03x vs mma.sync)
+  k2_tc2_noE134                   942.8 us    2016 cyc/chunk   (1.34x vs mma.sync)

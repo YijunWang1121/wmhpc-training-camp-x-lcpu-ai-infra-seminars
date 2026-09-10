@@ -1,0 +1,20 @@
+== T7 SW128 layouts (as used by k2_tc v2) ==
+SW128 A Kmaj M128 K128, B Kmaj N32 correctness: PASS
+   latency (issue chain+commit+wait) =   752.1 cyc   throughput 1 SM =  370.7 cyc/instr-chain (  1414 MAC/cyc)   all-SM =  370.7 cyc (  1414 MAC/cyc/SM)
+SW128 M128 N16 K16                 correctness: PASS
+   latency (issue chain+commit+wait) =   265.0 cyc   throughput 1 SM =   50.1 cyc/instr-chain (   654 MAC/cyc)   all-SM =   50.1 cyc (   654 MAC/cyc/SM)
+SW128 B MN-major N128 K16 (a)      correctness: PASS
+   latency (issue chain+commit+wait) =   265.0 cyc   throughput 1 SM =   64.1 cyc/instr-chain (  4088 MAC/cyc)   all-SM =   64.1 cyc (  4088 MAC/cyc/SM)
+   MISMATCH [0,0] got 28 want 22
+   MISMATCH [0,1] got -35 want -21
+   MISMATCH [0,2] got -12 want -8
+SW128 B MN-major N128 K16 (b)      correctness: FAIL
+SW128 M128 N128 K128               correctness: PASS
+   latency (issue chain+commit+wait) =   752.1 cyc   throughput 1 SM =  512.2 cyc/instr-chain (  4095 MAC/cyc)   all-SM =  512.2 cyc (  4095 MAC/cyc/SM)
+== T6 tcgen05.ld 128 lanes x C fp32 (4 warps) ==
+   tcgen05.ld 32x32b.x16 + wait (+16 dependent FADD),  16 cols:   200.1 cyc per 128x16 fp32 tile ( 40.9 B/cyc)
+   tcgen05.ld 32x32b.x16 + wait (+16 dependent FADD),  32 cols:   316.1 cyc per 128x32 fp32 tile ( 51.8 B/cyc)
+   tcgen05.ld 32x32b.x16 + wait (+16 dependent FADD), 128 cols:   962.2 cyc per 128x128 fp32 tile ( 68.1 B/cyc)
+   tcgen05.ld 32x32b.x16 + wait (ld/wait only)      ,  16 cols:   139.1 cyc per 128x16 fp32 tile ( 58.9 B/cyc)
+   tcgen05.ld 32x32b.x16 + wait (ld/wait only)      ,  32 cols:   191.1 cyc per 128x32 fp32 tile ( 85.7 B/cyc)
+   tcgen05.ld 32x32b.x16 + wait (ld/wait only)      , 128 cols:   446.2 cyc per 128x128 fp32 tile (146.9 B/cyc)

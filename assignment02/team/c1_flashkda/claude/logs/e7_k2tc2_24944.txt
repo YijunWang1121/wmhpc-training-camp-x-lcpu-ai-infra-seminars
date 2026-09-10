@@ -1,0 +1,19 @@
+using /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/k2tc/k2_tc2.cpython-312-x86_64-linux-gnu.so
+k2_tc smem bytes: 84992
+  G1 uT   rel 2.108610867529135e-07  outT rel 2.708029196223364e-07
+  G2 u2T  rel 0.002733220583106189
+  G2' out2 rel 0.003226060137508943
+  G3 kU   rel 0.0012429919357836458
+  E4 Snew rel 0.0014294617783121156
+  E3 staged out vs ref rel 0.0  gmem out chunk0 vs staged rel 0.0  gmem out vs flash rel 0.0
+  chunk1 S(smem) vs Snew rel 0.0014294617783121156  KQ1 kd rel 0.0  qd rel 0.0  V1 rel 0.0
+  NaN tiles (chunk x head): []  hT nan: 0
+[T=256 H=4] tc-vs-flash: out rel 0.00e+00 hT rel 0.00e+00 | vs fp64 naive: out flash 5.28e-03 tc 5.28e-03 | hT flash 4.65e-03 tc 4.65e-03
+[T=1024 H=8] tc-vs-flash: out rel 0.00e+00 hT rel 0.00e+00 | vs fp64 naive: out flash 5.31e-03 tc 5.31e-03 | hT flash 4.41e-03 tc 4.41e-03
+[T=2048 H=4] tc-vs-flash: out rel 0.00e+00 hT rel 0.00e+00 | vs fp64 naive: out flash 5.22e-03 tc 5.22e-03 | hT flash 4.51e-03 tc 4.51e-03
+[T=8192 H=96] SM clock now 1095 MHz | K2 mma.sync   1287.9 us (  2754 cyc/chunk)   K2 tcgen05   2086.8 us (  4463 cyc/chunk)   speedup 0.62x
+   per-chunk cycles (head-avg, timing build): G1 issue+wait     75 | E1 sync     43 | G2 issue+wait    193 | E2 U    125 | G2'/G3 issue+wait    253 | E4 rest   1761 | out store    302 | relayout+sync+issue    311 | G1 issue only(thr0)    525 | TMA wait     96 | E3    824 | E4 ld b0     84 | E1 tmem ld     23 | E1 compute+st    356 | E1 fence     16 | sum 4987
+[T=8192 H=12] SM clock now 1095 MHz | K2 mma.sync   1266.5 us (  2709 cyc/chunk)   K2 tcgen05   2028.1 us (  4338 cyc/chunk)   speedup 0.62x
+   per-chunk cycles (head-avg, timing build): G1 issue+wait     75 | E1 sync     43 | G2 issue+wait    193 | E2 U    124 | G2'/G3 issue+wait    253 | E4 rest   1751 | out store    302 | relayout+sync+issue    310 | G1 issue only(thr0)    525 | TMA wait     96 | E3    822 | E4 ld b0     83 | E1 tmem ld     23 | E1 compute+st    352 | E1 fence     16 | sum 4967
+[T=32768 H=12] SM clock now 1095 MHz | K2 mma.sync   5054.7 us (  2703 cyc/chunk)   K2 tcgen05   8097.3 us (  4329 cyc/chunk)   speedup 0.62x
+   per-chunk cycles (head-avg, timing build): G1 issue+wait     74 | E1 sync     43 | G2 issue+wait    193 | E2 U    124 | G2'/G3 issue+wait    253 | E4 rest   1751 | out store    302 | relayout+sync+issue    310 | G1 issue only(thr0)    525 | TMA wait     96 | E3    823 | E4 ld b0     83 | E1 tmem ld     23 | E1 compute+st    352 | E1 fence     16 | sum 4968

@@ -1,0 +1,22 @@
+== A. T sweep, lb=-5 ==
+A                                  T=   512 lb= -5.00 | out rel: flash 5.28e-03 tri 3.38e-03 | hT rel: flash 4.56e-03 tri 2.31e-03 | hT maxabs flash 4.40e-03 tri 1.76e-03 | out windows(first/mid/last) flash 5.26e-03/5.31e-03/5.31e-03 tri 3.37e-03/3.38e-03/3.38e-03
+A                                  T=  2048 lb= -5.00 | out rel: flash 5.25e-03 tri 3.36e-03 | hT rel: flash 4.56e-03 tri 2.17e-03 | hT maxabs flash 4.53e-03 tri 2.17e-03 | out windows(first/mid/last) flash 5.31e-03/5.25e-03/5.29e-03 tri 3.32e-03/3.36e-03/3.36e-03
+A                                  T=  8192 lb= -5.00 | out rel: flash 5.21e-03 tri 3.32e-03 | hT rel: flash 4.32e-03 tri 2.36e-03 | hT maxabs flash 3.35e-03 tri 2.21e-03 | out windows(first/mid/last) flash 5.12e-03/5.42e-03/5.19e-03 tri 3.26e-03/3.37e-03/3.32e-03
+A                                  T= 16384 lb= -5.00 | out rel: flash 5.25e-03 tri 3.33e-03 | hT rel: flash 4.55e-03 tri 2.42e-03 | hT maxabs flash 5.41e-03 tri 2.50e-03 | out windows(first/mid/last) flash 5.33e-03/5.35e-03/5.37e-03 tri 3.34e-03/3.36e-03/3.35e-03
+== B. decay strength sweep, T=4096 ==
+B                                  T=  4096 lb= -5.00 | out rel: flash 5.25e-03 tri 3.33e-03 | hT rel: flash 4.50e-03 tri 2.36e-03 | hT maxabs flash 4.14e-03 tri 2.13e-03 | out windows(first/mid/last) flash 5.18e-03/5.27e-03/5.38e-03 tri 3.32e-03/3.30e-03/3.33e-03
+B                                  T=  4096 lb= -1.00 | out rel: flash 5.50e-03 tri 3.43e-03 | hT rel: flash 4.71e-03 tri 2.55e-03 | hT maxabs flash 5.70e-03 tri 2.57e-03 | out windows(first/mid/last) flash 5.36e-03/5.53e-03/5.48e-03 tri 3.39e-03/3.40e-03/3.42e-03
+B                                  T=  4096 lb= -0.10 | out rel: flash 5.98e-03 tri 3.89e-03 | hT rel: flash 5.09e-03 tri 3.28e-03 | hT maxabs flash 6.63e-03 tri 3.87e-03 | out windows(first/mid/last) flash 5.96e-03/5.99e-03/6.04e-03 tri 3.87e-03/3.90e-03/3.91e-03
+B                                  T=  4096 lb= -0.01 | out rel: flash 6.94e-03 tri 4.50e-03 | hT rel: flash 6.13e-03 tri 3.78e-03 | hT maxabs flash 1.31e-02 tri 7.87e-03 | out windows(first/mid/last) flash 6.64e-03/6.97e-03/6.97e-03 tri 4.34e-03/4.50e-03/4.53e-03
+== B'. weak decay + gate pushed towards 0 (g_raw center +6 -> sigmoid~1 -> gate~lb) vs -6 (gate~0, no decay) ==
+B' gate_center=+6                  T=  4096 lb= -1.00 | out rel: flash 5.32e-03 tri 3.39e-03 | hT rel: flash 5.67e-03 tri 2.49e-03 | hT maxabs flash 9.60e-03 tri 3.52e-03 | out windows(first/mid/last) flash 5.30e-03/5.22e-03/5.30e-03 tri 3.39e-03/3.37e-03/3.40e-03
+B' gate_center=-6                  T=  4096 lb= -1.00 | out rel: flash 7.96e-03 tri 4.92e-03 | hT rel: flash 7.36e-03 tri 4.18e-03 | hT maxabs flash 3.27e-02 tri 1.19e-02 | out windows(first/mid/last) flash 6.68e-03/8.04e-03/8.03e-03 tri 4.49e-03/4.96e-03/4.96e-03
+== E. value scale ==
+E vscale=1.0                       T=  4096 lb= -1.00 | out rel: flash 5.50e-03 tri 3.43e-03 | hT rel: flash 4.71e-03 tri 2.55e-03 | hT maxabs flash 5.70e-03 tri 2.57e-03
+E vscale=64.0                      T=  4096 lb= -1.00 | out rel: flash 5.50e-03 tri 3.43e-03 | hT rel: flash 4.71e-03 tri 2.55e-03 | hT maxabs flash 3.65e-01 tri 1.64e-01
+== D. chained calls ==
+chained 16x512 state-io=bfloat16 lb=-1.0 | out rel 5.49e-03 (single call 5.49e-03) | hT rel 4.57e-03 (single 4.57e-03)
+chained 16x512 state-io=float32  lb=-1.0 | out rel 5.49e-03 (single call 5.49e-03) | hT rel 4.57e-03 (single 4.57e-03)
+chained 16x512 state-io=bfloat16 lb=-0.01 | out rel 6.95e-03 (single call 6.95e-03) | hT rel 6.12e-03 (single 6.12e-03)
+chained 16x512 state-io=float32  lb=-0.01 | out rel 6.95e-03 (single call 6.95e-03) | hT rel 6.12e-03 (single 6.12e-03)
+E5 RESULT: max(flash hT err / triton hT err) over A+B = 2.10  -> PASS (<3x)

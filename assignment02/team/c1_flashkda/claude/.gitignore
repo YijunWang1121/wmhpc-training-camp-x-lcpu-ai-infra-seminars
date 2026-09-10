@@ -1,0 +1,9 @@
+# rebuildable binaries (see REPORT.md §9)
+exp/variants/*.so
+exp/k2tc/*.so
+exp/k2tc/build/
+exp/k2tc/build*.log
+exp/mb_mma
+__pycache__/
+# raw SASS dumps (24 MB; regenerate with cuobjdump -sass), histogram kept in sm103a_hist.txt
+profiles/*.sass

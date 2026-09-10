@@ -1,0 +1,4 @@
+== T7 SW128 layouts (as used by k2_tc v2) ==
+SW128 A Kmaj M128 K128, B Kmaj N32 correctness: PASS
+   latency (issue chain+commit+wait) =   752.1 cyc   throughput 1 SM =  370.7 cyc/instr-chain (  1414 MAC/cyc)   all-SM =  370.7 cyc (  1414 MAC/cyc/SM)
+CUDA error an illegal memory access was encountered @270

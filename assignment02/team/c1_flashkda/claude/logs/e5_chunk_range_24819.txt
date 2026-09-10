@@ -1,0 +1,37 @@
+(a) range: fraction of k_decayed=k*exp2(cumsum) flushed to 0 in fp32 / bf16, and k_inv=k*exp2(-cumsum) -> inf
+    fp32/bf16 normal range 2^-126..2^128; bound of |cumsum| = C*|lb|*log2e: C=16:115, C=32:231, C=64:462
+    bench dist     lb=-5.0 C=16: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 3.06e-03
+    bench dist     lb=-5.0 C=32: k_d underflow fp32 15.71% bf16 15.74% | k_inv overflow fp32 14.61% bf16 14.61% | L rel err (bf16 factorised vs fp64) nan
+    bench dist     lb=-5.0 C=64: k_d underflow fp32 57.28% bf16 57.30% | k_inv overflow fp32 56.60% bf16 56.60% | L rel err (bf16 factorised vs fp64) nan
+    bench dist     lb=-3.0 C=16: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 3.21e-03
+    bench dist     lb=-3.0 C=32: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) nan
+    bench dist     lb=-3.0 C=64: k_d underflow fp32 27.82% bf16 27.85% | k_inv overflow fp32 26.69% bf16 26.69% | L rel err (bf16 factorised vs fp64) nan
+    bench dist     lb=-1.0 C=16: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.31e-03
+    bench dist     lb=-1.0 C=32: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.62e-03
+    bench dist     lb=-1.0 C=64: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.02e-03
+    worst(gate=lb) lb=-5.0 C=16: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.35e-03
+    worst(gate=lb) lb=-5.0 C=32: k_d underflow fp32 46.88% bf16 46.89% | k_inv overflow fp32 46.88% bf16 46.88% | L rel err (bf16 factorised vs fp64) nan
+    worst(gate=lb) lb=-5.0 C=64: k_d underflow fp32 73.44% bf16 73.44% | k_inv overflow fp32 73.44% bf16 73.44% | L rel err (bf16 factorised vs fp64) nan
+    worst(gate=lb) lb=-3.0 C=16: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.47e-03
+    worst(gate=lb) lb=-3.0 C=32: k_d underflow fp32  9.38% bf16  9.46% | k_inv overflow fp32  9.38% bf16  9.38% | L rel err (bf16 factorised vs fp64) nan
+    worst(gate=lb) lb=-3.0 C=64: k_d underflow fp32 54.69% bf16 54.73% | k_inv overflow fp32 54.69% bf16 54.69% | L rel err (bf16 factorised vs fp64) nan
+    worst(gate=lb) lb=-1.0 C=16: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.50e-03
+    worst(gate=lb) lb=-1.0 C=32: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.52e-03
+    worst(gate=lb) lb=-1.0 C=64: k_d underflow fp32  0.00% bf16  0.00% | k_inv overflow fp32  0.00% bf16  0.00% | L rel err (bf16 factorised vs fp64) 2.55e-03
+(b) Neumann inverse: MMA count and fp16 accuracy vs fp64 (L from real KDA construction, beta~sigmoid)
+    C=16 float16 : rel err 2.07e-06 (max |inv| 1.00), matmuls 6 of 16^3 -> 12 m16n8k16-equiv per chunk = 0.75 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=16 bfloat16: rel err 1.62e-05 (max |inv| 1.00), matmuls 6 of 16^3 -> 12 m16n8k16-equiv per chunk = 0.75 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=16 float32 : rel err 2.47e-10 (max |inv| 1.00), matmuls 6 of 16^3 -> 12 m16n8k16-equiv per chunk = 0.75 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=32 float16 : rel err 2.28e-06 (max |inv| 1.00), matmuls 8 of 32^3 -> 128 m16n8k16-equiv per chunk = 4.00 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=32 bfloat16: rel err 1.79e-05 (max |inv| 1.00), matmuls 8 of 32^3 -> 128 m16n8k16-equiv per chunk = 4.00 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=32 float32 : rel err 2.77e-10 (max |inv| 1.00), matmuls 8 of 32^3 -> 128 m16n8k16-equiv per chunk = 4.00 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=64 float16 : rel err 2.76e-06 (max |inv| 1.00), matmuls 10 of 64^3 -> 1280 m16n8k16-equiv per chunk = 20.00 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=64 bfloat16: rel err 2.19e-05 (max |inv| 1.00), matmuls 10 of 64^3 -> 1280 m16n8k16-equiv per chunk = 20.00 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+    C=64 float32 : rel err 3.34e-10 (max |inv| 1.00), matmuls 10 of 64^3 -> 1280 m16n8k16-equiv per chunk = 20.00 per token (C=16 kernel: 7 x 2 = 14 HMMA per chunk)
+(c) K2 register budget per thread for CHUNK=C (4 warps, each warp owns 32 of 128 state columns):
+    C=16: u_acc+out_acc  32 regs, U(bf16)   8, A frags/state ring ~32, total ~72 (+addressing); limit 255 -> ok
+          per-chunk MMA per warp: P1  64  P3/4   8  P6  32  -> per token 6.5 HMMA/warp
+    C=32: u_acc+out_acc  64 regs, U(bf16)  16, A frags/state ring ~32, total ~112 (+addressing); limit 255 -> ok
+          per-chunk MMA per warp: P1 128  P3/4  32  P6  64  -> per token 7.0 HMMA/warp
+    C=64: u_acc+out_acc 128 regs, U(bf16)  32, A frags/state ring ~32, total ~192 (+addressing); limit 255 -> ok
+          per-chunk MMA per warp: P1 256  P3/4 128  P6 128  -> per token 8.0 HMMA/warp

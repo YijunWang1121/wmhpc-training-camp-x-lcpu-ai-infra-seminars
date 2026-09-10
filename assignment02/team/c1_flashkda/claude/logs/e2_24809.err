@@ -1,0 +1,2 @@
+/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/env.sh: line 3: syntax error near unexpected token `('
+/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/env.sh: line 3: `export C1_ENV_LOADED=1 (sbatch copies the script, so no $0-relative paths)'

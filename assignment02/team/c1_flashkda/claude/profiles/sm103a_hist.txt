@@ -1,0 +1,69 @@
+# per-kernel SASS instruction histogram, sm_103a cubin of flash_kda_C (pin 1ce47ea); regenerate: cuobjdump -sass <so> | this script
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2184
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 205), ('IMAD', 200), ('PRMT', 155), ('UIADD3', 141), ('FFMA', 130), ('STG', 128), ('F2FP', 107), ('HMMA', 104), ('SHF', 96), ('UTMALDG', 86), ('R2UR', 76), ('LOP3', 71), ('MOV', 69), ('BRA', 68), ('LDSM', 60), ('SYNCS', 40)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2184
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('IMAD', 196), ('UMOV', 184), ('UIADD3', 141), ('PRMT', 132), ('FFMA', 130), ('STG', 128), ('SHF', 104), ('HMMA', 104), ('F2FP', 97), ('R2UR', 80), ('LOP3', 77), ('UTMALDG', 70), ('BRA', 68), ('MOV', 68), ('LDSM', 60), ('LDS', 44)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=1952
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 202), ('UIADD3', 140), ('FFMA', 130), ('PRMT', 130), ('IMAD', 129), ('STG', 128), ('HMMA', 104), ('F2FP', 97), ('R2UR', 90), ('UTMALDG', 86), ('SHF', 85), ('MOV', 64), ('LDSM', 60), ('BRA', 49), ('LDS', 34), ('SYNCS', 32)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2032
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 199), ('IMAD', 145), ('UIADD3', 138), ('PRMT', 131), ('FFMA', 130), ('STG', 128), ('R2UR', 107), ('HMMA', 104), ('F2FP', 97), ('SHF', 87), ('MOV', 75), ('UTMALDG', 70), ('BRA', 65), ('LDSM', 60), ('SYNCS', 35), ('LDS', 34)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=1920
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 149), ('IMAD', 144), ('PRMT', 131), ('FFMA', 130), ('STG', 128), ('UIADD3', 121), ('HMMA', 104), ('R2UR', 98), ('F2FP', 97), ('SHF', 87), ('UTMALDG', 70), ('MOV', 68), ('BRA', 64), ('LDSM', 60), ('SYNCS', 35), ('LDS', 34)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2456
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('IMAD', 249), ('UMOV', 233), ('UIADD3', 160), ('PRMT', 155), ('FFMA', 130), ('STG', 128), ('LOP3', 122), ('SHF', 112), ('F2FP', 107), ('HMMA', 104), ('UTMALDG', 86), ('R2UR', 80), ('BRA', 72), ('MOV', 72), ('LDSM', 60), ('VIADD', 46)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2056
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 251), ('UIADD3', 157), ('FFMA', 130), ('PRMT', 130), ('STG', 128), ('IMAD', 127), ('HMMA', 104), ('R2UR', 97), ('F2FP', 97), ('UTMALDG', 86), ('SHF', 85), ('MOV', 72), ('LDSM', 60), ('BRA', 50), ('LDS', 34), ('SYNCS', 32)]
+
+_Z22_flash_kda_fwd_prepareIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_TraitsINS  total=1128
+  MMA: {'HMMA.16816.F32.BF16': 32, 'HMMA.16816.F16': 12}
+  top: [('UMOV', 110), ('UIADD3', 78), ('IMAD', 67), ('STS', 55), ('UTMASTG', 53), ('FMUL', 49), ('FADD', 49), ('HMMA', 44), ('ISETP', 41), ('MUFU', 39), ('LOP3', 38), ('BRA', 38), ('F2FP', 37), ('LDS', 36), ('FFMA', 34), ('LDSM', 34)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2264
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 203), ('IMAD', 201), ('PRMT', 155), ('UIADD3', 131), ('FFMA', 130), ('STG', 128), ('SHF', 113), ('F2FP', 107), ('HMMA', 104), ('UTMALDG', 86), ('R2UR', 76), ('BRA', 74), ('LOP3', 74), ('MOV', 68), ('LDSM', 60), ('ISETP', 41)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2264
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('IMAD', 201), ('UMOV', 183), ('UIADD3', 134), ('PRMT', 132), ('FFMA', 130), ('STG', 128), ('SHF', 120), ('HMMA', 104), ('F2FP', 97), ('LOP3', 80), ('R2UR', 76), ('BRA', 74), ('UTMALDG', 70), ('MOV', 63), ('LDSM', 60), ('LEA', 50)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2008
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 201), ('IMAD', 135), ('UIADD3', 130), ('FFMA', 130), ('PRMT', 130), ('STG', 128), ('HMMA', 104), ('SHF', 102), ('F2FP', 97), ('UTMALDG', 86), ('R2UR', 72), ('MOV', 60), ('LDSM', 60), ('BRA', 55), ('LEA', 41), ('ISETP', 39)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2072
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 197), ('IMAD', 147), ('UIADD3', 131), ('PRMT', 131), ('FFMA', 130), ('STG', 128), ('SHF', 104), ('HMMA', 104), ('F2FP', 97), ('R2UR', 76), ('BRA', 71), ('UTMALDG', 70), ('MOV', 65), ('LDSM', 60), ('LEA', 40), ('ISETP', 39)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=1984
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 153), ('IMAD', 147), ('PRMT', 131), ('FFMA', 130), ('STG', 128), ('UIADD3', 114), ('SHF', 104), ('HMMA', 104), ('F2FP', 97), ('R2UR', 75), ('BRA', 70), ('UTMALDG', 70), ('MOV', 65), ('LDSM', 60), ('LEA', 40), ('ISETP', 39)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2528
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('IMAD', 250), ('UMOV', 233), ('PRMT', 155), ('UIADD3', 151), ('FFMA', 130), ('SHF', 129), ('STG', 128), ('LOP3', 125), ('F2FP', 107), ('HMMA', 104), ('UTMALDG', 86), ('BRA', 78), ('R2UR', 77), ('MOV', 66), ('LDSM', 60), ('ISETP', 52)]
+
+_Z25_flash_kda_fwd_recurrenceIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_Traits  total=2096
+  MMA: {'HMMA.16816.F32.BF16': 104}
+  top: [('UMOV', 245), ('UIADD3', 147), ('IMAD', 135), ('FFMA', 130), ('PRMT', 130), ('STG', 128), ('HMMA', 104), ('SHF', 102), ('F2FP', 97), ('UTMALDG', 86), ('R2UR', 73), ('MOV', 60), ('LDSM', 60), ('BRA', 56), ('LEA', 41), ('ISETP', 39)]
+
+_Z22_flash_kda_fwd_prepareIN4cute9TiledCopyINS0_9Copy_AtomIJNS0_11Copy_TraitsINS  total=1120
+  MMA: {'HMMA.16816.F32.BF16': 32, 'HMMA.16816.F16': 12}
+  top: [('UMOV', 110), ('UIADD3', 86), ('STS', 55), ('UTMASTG', 53), ('FMUL', 49), ('FADD', 49), ('IMAD', 48), ('HMMA', 44), ('BRA', 40), ('MUFU', 37), ('F2FP', 37), ('LDS', 36), ('FFMA', 34), ('LDSM', 34), ('SHF', 29), ('LOP3', 29)]
+
+_Z28_flash_kda_build_tile_prefixPKliiPi  total=400
+  MMA: none
+  top: [('IMAD', 120), ('ISETP', 58), ('IADD3', 38), ('VIADD', 32), ('LOP3', 23), ('IABS', 20), ('LDG', 19), ('STG', 16), ('SEL', 14), ('LDC', 12), ('NOP', 11), ('EXIT', 6), ('BRA', 5), ('I2F', 5), ('MUFU', 5), ('F2I', 5)]

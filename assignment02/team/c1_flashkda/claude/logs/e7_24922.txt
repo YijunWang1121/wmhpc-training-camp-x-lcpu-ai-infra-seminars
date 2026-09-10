@@ -1,0 +1,18 @@
+k2_tc smem bytes: 82176
+  G1 uT   rel 2.108610867529135e-07  outT rel 1.827145962574149e-07
+  G2 u2T  rel 0.0018499809735919562
+  G2' out2 rel 0.0027450498087214534
+  G3 kU   rel 0.0035579868487851866
+  E4 Snew rel 4.281148797583837e-05
+  E3 staged out vs ref rel 0.0  gmem out chunk0 vs staged rel 0.0  gmem out vs flash rel 2.053377828479722
+  chunk1 S(smem) vs Snew rel 4.281148797583837e-05  KQ1 kd rel 0.0  qd rel 0.0  V1 rel 0.0
+  NaN tiles (chunk x head): [(9, 3), (10, 3), (11, 3), (12, 3), (13, 3), (14, 3), (15, 3)]  hT nan: 16384
+[T=256 H=4] tc-vs-flash: out rel nan hT rel nan | vs fp64 naive: out flash 5.28e-03 tc nan | hT flash 4.65e-03 tc nan
+[T=1024 H=8] tc-vs-flash: out rel nan hT rel nan | vs fp64 naive: out flash 5.31e-03 tc nan | hT flash 4.41e-03 tc nan
+[T=2048 H=4] tc-vs-flash: out rel nan hT rel nan | vs fp64 naive: out flash 5.22e-03 tc nan | hT flash 4.51e-03 tc nan
+[T=8192 H=96] SM clock now 1095 MHz | K2 mma.sync   1295.9 us (  2772 cyc/chunk)   K2 tcgen05   4138.6 us (  8851 cyc/chunk)   speedup 0.31x
+   per-chunk cycles (head-avg, timing build): prefetch+G1 wait    681 | E1 u   1213 | G2 wait    191 | E2 U    347 | G2'/G3 wait    252 | E3+E4 state   3783 | out store    259 | prefetch issue   1859 | G1 issue(thr0)    544 | sum 9129
+[T=8192 H=12] SM clock now 1095 MHz | K2 mma.sync   1287.7 us (  2754 cyc/chunk)   K2 tcgen05   4119.3 us (  8810 cyc/chunk)   speedup 0.31x
+   per-chunk cycles (head-avg, timing build): prefetch+G1 wait    681 | E1 u   1213 | G2 wait    191 | E2 U    347 | G2'/G3 wait    252 | E3+E4 state   3768 | out store    258 | prefetch issue   1770 | G1 issue(thr0)    544 | sum 9023
+[T=32768 H=12] SM clock now 1095 MHz | K2 mma.sync   5131.5 us (  2744 cyc/chunk)   K2 tcgen05  16464.2 us (  8803 cyc/chunk)   speedup 0.31x
+   per-chunk cycles (head-avg, timing build): prefetch+G1 wait    681 | E1 u   1213 | G2 wait    191 | E2 U    346 | G2'/G3 wait    252 | E3+E4 state   3782 | out store    258 | prefetch issue   1846 | G1 issue(thr0)    544 | sum 9113

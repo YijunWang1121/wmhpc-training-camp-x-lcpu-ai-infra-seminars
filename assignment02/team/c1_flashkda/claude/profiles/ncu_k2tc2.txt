@@ -1,0 +1,213 @@
+[768298] python3.12@127.0.0.1
+  void _flash_kda_fwd_recurrence<cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<2048>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<int, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<16>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<16>>, cute::C<16>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<16>, cute::C<1>>, cute::C<128>>>>>, cute::tuple<cute::C<1>, cute::C<16>, cute::C<128>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<512>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<32>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::C<32>, cute::C<1>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::C<1>, cute::C<0>>>>>, cute::tuple<cute::C<32>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<2048>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<16>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<16>>, cute::C<16>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<16>, cute::C<1>>, cute::C<128>>>>>, cute::tuple<cute::C<1>, cute::C<16>, cute::C<128>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<2048>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<16>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<16>>, cute::C<16>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<16>, cute::C<1>>, cute::C<128>>>>>, cute::tuple<cute::C<1>, cute::C<16>, cute::C<128>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<2048>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<16>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<16>>, cute::C<16>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<16>, cute::C<1>>, cute::C<128>>>>>, cute::tuple<cute::C<1>, cute::C<16>, cute::C<128>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<4096>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<128>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, float>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::C<128>, cute::C<1>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::C<1>, cute::C<0>>>>>, cute::tuple<cute::C<1>, cute::C<128>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<2048>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<16>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<16>>, cute::C<2>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<16>, cute::C<1>>, cute::C<128>>>>>, cute::tuple<cute::C<1>, cute::C<16>, cute::C<16>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<2048>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<16>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<16>>, cute::C<2>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<16>, cute::C<1>>, cute::C<128>>>>>, cute::tuple<cute::C<1>, cute::C<16>, cute::C<16>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_LOAD, cute::C<16384>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<128>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<128>>, cute::C<16>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<128>, cute::C<1>>, cute::C<1024>>>>>, cute::tuple<cute::C<1>, cute::C<128>, cute::C<128>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_STORE, cute::C<16384>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<128>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<128>>, cute::C<16>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<128>, cute::C<1>>, cute::C<1024>>>>>, cute::tuple<cute::C<1>, cute::C<128>, cute::C<128>>>, cute::TiledCopy<cute::Copy_Atom<cute::Copy_Traits<cute::SM90_TMA_STORE, cute::C<2048>, cute::AuxTmaParams<cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<int, 0>>, const cute::Layout<cute::tuple<cute::C<8>, cute::C<16>, cute::C<1>>, cute::tuple<cute::ScaledBasis<cute::C<1>, 2>, cute::ScaledBasis<cute::C<1>, 1>, cute::ScaledBasis<cute::C<1>, 0>>> &, const cute::Swizzle<0, 4, 3> &>>, cutlass::bfloat16_t>, cute::Layout<cute::tuple<cute::C<1>, cute::tuple<cute::tuple<cute::tuple<cute::C<8>, cute::C<16>>, cute::C<16>>>>, cute::tuple<cute::C<0>, cute::tuple<cute::tuple<cute::tuple<cute::C<16>, cute::C<1>>, cute::C<128>>>>>, cute::tuple<cute::C<1>, cute::C<16>, cute::C<128>>>, 16, 128, 3, 2, 192, 1, 1, 0, 0>(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, cutlass::bfloat16_t *, int, int, int, const long *, int) (1, 96, 1)x(192, 1, 1), Context 1, Stream 7, Device 0, CC 10.3
+    Section: Command line profiler metrics
+    -------------------------------------------------- ----------- ------------
+    Metric Name                                        Metric Unit Metric Value
+    -------------------------------------------------- ----------- ------------
+    gpu__time_duration.sum                                      ms         1.29
+    l1tex__data_bank_conflicts_pipe_lsu_mem_shared.sum                 10600150
+    l1tex__data_pipe_lsu_wavefronts_mem_shared.sum                     79267665
+    sm__cycles_elapsed.avg                                   cycle   1409510.70
+    sm__inst_executed_pipe_tensor.sum                         inst     20447232
+    smsp__inst_executed.sum                                   inst    173788762
+    -------------------------------------------------- ----------- ------------
+
+    Section: GPU Speed Of Light Throughput
+    ----------------------- ----------- ------------
+    Metric Name             Metric Unit Metric Value
+    ----------------------- ----------- ------------
+    DRAM Frequency                  Ghz         4.00
+    SM Frequency                    Ghz         1.09
+    Elapsed Cycles                cycle      1411105
+    Memory Throughput                 %        38.15
+    DRAM Throughput                   %        10.85
+    Duration                         ms         1.29
+    L1/TEX Cache Throughput           %        59.80
+    L2 Cache Throughput               %        19.95
+    SM Active Cycles              cycle    899156.24
+    Compute (SM) Throughput           %        20.87
+    ----------------------- ----------- ------------
+
+    OPT   This kernel grid is too small to fill the available resources on this device, resulting in only 0.3 full      
+          waves across all SMs. Look at Launch Statistics for more details.                                             
+
+    Section: Memory Workload Analysis
+    -------------------------------------- ----------- ------------
+    Metric Name                            Metric Unit Metric Value
+    -------------------------------------- ----------- ------------
+    Local Memory Spilling Requests                                0
+    Local Memory Spilling Request Overhead           %      no data
+    Memory Throughput                          Gbyte/s       832.25
+    Mem Busy                                         %        38.15
+    Max Bandwidth                                    %        25.92
+    L1/TEX Hit Rate                                  %            0
+    L2 Persisting Size                           Mbyte        24.87
+    L2 Compression Success Rate                      %            0
+    L2 Compression Ratio                             %            0
+    L2 Compression Input Sectors                sector         8311
+    L2 Hit Rate                                      %        51.29
+    Mem Pipes Busy                                   %        10.84
+    -------------------------------------- ----------- ------------
+
+    Section: Scheduler Statistics
+    ---------------------------- ----------- ------------
+    Metric Name                  Metric Unit Metric Value
+    ---------------------------- ----------- ------------
+    One or More Eligible                   %        32.74
+    Issued Warp Per Scheduler                        0.33
+    No Eligible                            %        67.26
+    Active Warps Per Scheduler          warp         1.50
+    Eligible Warps Per Scheduler        warp         0.35
+    ---------------------------- ----------- ------------
+
+    OPT   Est. Local Speedup: 61.85%                                                                                    
+          Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
+          issues an instruction every 3.1 cycles. This might leave hardware resources underutilized and may lead to     
+          less optimal performance. Out of the maximum of 16 warps per scheduler, this workload allocates an average    
+          of 1.50 active warps per scheduler, but only an average of 0.35 warps were eligible per cycle. Eligible       
+          warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no      
+          eligible warp results in no instruction being issued and the issue slot remains unused. To increase the       
+          number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons    
+          on the Warp State Statistics and Source Counters sections.                                                    
+
+    Section: Warp State Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Warp Cycles Per Issued Instruction             cycle         4.58
+    Warp Cycles Per Executed Instruction           cycle         4.59
+    Avg. Active Threads Per Warp                                27.38
+    Avg. Not Predicated Off Threads Per Warp                    27.16
+    ---------------------------------------- ----------- ------------
+
+    WRN   The optional metric smsp__pcsamp_sample_count could not be found. Collecting it as an additional metric could 
+          enable the rule to provide more guidance.                                                                     
+
+    Section: Occupancy
+    ------------------------------- ----------- ------------
+    Metric Name                     Metric Unit Metric Value
+    ------------------------------- ----------- ------------
+    Max Active Clusters                 cluster            0
+    Max Cluster Size                      block            8
+    Overall GPU Occupancy                     %            0
+    Cluster Occupancy                         %            0
+    Block Limit Barriers                  block            7
+    Block Limit SM                        block           32
+    Block Limit Registers                 block            4
+    Block Limit Shared Mem                block            2
+    Block Limit Warps                     block           10
+    Theoretical Active Warps per SM        warp           12
+    Theoretical Occupancy                     %        18.75
+    Achieved Occupancy                        %         9.37
+    Achieved Active Warps Per SM           warp         5.99
+    ------------------------------- ----------- ------------
+
+    OPT   Est. Speedup: 61.85%                                                                                          
+          The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the       
+          hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the required amount of      
+          shared memory.                                                                                                
+
+  void <unnamed>::k2_tc2_kernel<0>(CUtensorMap_st, CUtensorMap_st, CUtensorMap_st, <unnamed>::Params) (96, 1, 1)x(128, 1, 1), Context 1, Stream 7, Device 0, CC 10.3
+    Section: Command line profiler metrics
+    -------------------------------------------------- ----------- ------------
+    Metric Name                                        Metric Unit Metric Value
+    -------------------------------------------------- ----------- ------------
+    gpu__time_duration.sum                                      ms         2.09
+    l1tex__data_bank_conflicts_pipe_lsu_mem_shared.sum                  5162119
+    l1tex__data_pipe_lsu_wavefronts_mem_shared.sum                     57121441
+    sm__cycles_elapsed.avg                                   cycle   2284858.66
+    sm__inst_executed_pipe_tensor.sum                         inst       540672
+    smsp__inst_executed.sum                                   inst    193040544
+    -------------------------------------------------- ----------- ------------
+
+    Section: GPU Speed Of Light Throughput
+    ----------------------- ----------- ------------
+    Metric Name             Metric Unit Metric Value
+    ----------------------- ----------- ------------
+    DRAM Frequency                  Ghz         4.00
+    SM Frequency                    Ghz         1.09
+    Elapsed Cycles                cycle      2285518
+    Memory Throughput                 %        17.74
+    DRAM Throughput                   %         6.70
+    Duration                         ms         2.09
+    L1/TEX Cache Throughput           %        28.11
+    L2 Cache Throughput               %         4.63
+    SM Active Cycles              cycle   1441796.13
+    Compute (SM) Throughput           %        14.27
+    ----------------------- ----------- ------------
+
+    OPT   This kernel grid is too small to fill the available resources on this device, resulting in only 0.3 full      
+          waves across all SMs. Look at Launch Statistics for more details.                                             
+
+    Section: Memory Workload Analysis
+    -------------------------------------- ----------- ------------
+    Metric Name                            Metric Unit Metric Value
+    -------------------------------------- ----------- ------------
+    Local Memory Spilling Requests                                0
+    Local Memory Spilling Request Overhead           %      no data
+    Memory Throughput                          Gbyte/s       514.17
+    Mem Busy                                         %        17.74
+    Max Bandwidth                                    %         9.19
+    L1/TEX Hit Rate                                  %            0
+    L2 Persisting Size                           Mbyte        24.87
+    L2 Compression Success Rate                      %            0
+    L2 Compression Ratio                             %            0
+    L2 Compression Input Sectors                sector      6402649
+    L2 Hit Rate                                      %         0.12
+    Mem Pipes Busy                                   %         6.63
+    -------------------------------------- ----------- ------------
+
+    Section: Scheduler Statistics
+    ---------------------------- ----------- ------------
+    Metric Name                  Metric Unit Metric Value
+    ---------------------------- ----------- ------------
+    One or More Eligible                   %        22.62
+    Issued Warp Per Scheduler                        0.23
+    No Eligible                            %        77.38
+    Active Warps Per Scheduler          warp         1.00
+    Eligible Warps Per Scheduler        warp         0.23
+    ---------------------------- ----------- ------------
+
+    OPT   Est. Local Speedup: 77.38%                                                                                    
+          Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
+          issues an instruction every 4.4 cycles. This might leave hardware resources underutilized and may lead to     
+          less optimal performance. Out of the maximum of 16 warps per scheduler, this workload allocates an average    
+          of 1.00 active warps per scheduler, which already limits the scheduler to less than a warp per instruction.   
+
+    Section: Warp State Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Warp Cycles Per Issued Instruction             cycle         4.42
+    Warp Cycles Per Executed Instruction           cycle         4.42
+    Avg. Active Threads Per Warp                                29.09
+    Avg. Not Predicated Off Threads Per Warp                    28.86
+    ---------------------------------------- ----------- ------------
+
+    WRN   The optional metric smsp__pcsamp_sample_count could not be found. Collecting it as an additional metric could 
+          enable the rule to provide more guidance.                                                                     
+
+    Section: Occupancy
+    ------------------------------- ----------- ------------
+    Metric Name                     Metric Unit Metric Value
+    ------------------------------- ----------- ------------
+    Max Active Clusters                 cluster            0
+    Max Cluster Size                      block            8
+    Overall GPU Occupancy                     %            0
+    Cluster Occupancy                         %            0
+    Block Limit Barriers                  block           32
+    Block Limit SM                        block           32
+    Block Limit Registers                 block            2
+    Block Limit Shared Mem                block            2
+    Block Limit Warps                     block           16
+    Theoretical Active Warps per SM        warp            8
+    Theoretical Occupancy                     %        12.50
+    Achieved Occupancy                        %         6.25
+    Achieved Active Warps Per SM           warp         4.00
+    ------------------------------- ----------- ------------
+
+    OPT   Est. Speedup: 77.38%                                                                                          
+          The 2.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the       
+          hardware maximum of 16. This kernel's theoretical occupancy (12.5%) is limited by the number of required      
+          registers, and the required amount of shared memory.                                                          
+

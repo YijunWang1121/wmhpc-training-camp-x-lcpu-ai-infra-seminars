@@ -1,0 +1,16 @@
+k2_tc smem bytes: 82176
+  G1 uT   rel 2.108610867529135e-07  outT rel 1.827145962574149e-07
+  G2 u2T  rel 0.0018499809735919562
+  G2' out2 rel 0.0027450498087214534
+  G3 kU   rel 0.0035579868487851866
+  E4 Snew rel 4.281148797583837e-05
+  out chunk0 tc-vs-flash rel 2.053377828479722  nan count tc: 14336
+[T=256 H=4] tc-vs-flash: out rel nan hT rel nan | vs fp64 naive: out flash 5.28e-03 tc nan | hT flash 4.65e-03 tc nan
+[T=1024 H=8] tc-vs-flash: out rel nan hT rel nan | vs fp64 naive: out flash 5.31e-03 tc nan | hT flash 4.41e-03 tc nan
+[T=2048 H=4] tc-vs-flash: out rel nan hT rel nan | vs fp64 naive: out flash 5.22e-03 tc nan | hT flash 4.51e-03 tc nan
+[T=8192 H=96] SM clock now 1095 MHz | K2 mma.sync   1280.1 us (  2738 cyc/chunk)   K2 tcgen05   4104.3 us (  8778 cyc/chunk)   speedup 0.31x
+   per-chunk cycles (head-avg, timing build): prefetch+G1 wait    725 | E1 u   1337 | G2 wait    194 | E2 U    353 | G2'/G3 wait    252 | E3+E4 state   3756 | out store    220 | prefetch issue   1833 | G1 issue(thr0)    525 | sum 9195
+[T=8192 H=12] SM clock now 1095 MHz | K2 mma.sync   1265.4 us (  2706 cyc/chunk)   K2 tcgen05   3969.8 us (  8490 cyc/chunk)   speedup 0.32x
+   per-chunk cycles (head-avg, timing build): prefetch+G1 wait    724 | E1 u   1337 | G2 wait    194 | E2 U    354 | G2'/G3 wait    252 | E3+E4 state   3741 | out store    221 | prefetch issue   1727 | G1 issue(thr0)    524 | sum 9074
+[T=32768 H=12] SM clock now 1095 MHz | K2 mma.sync   5051.3 us (  2701 cyc/chunk)   K2 tcgen05  16153.2 us (  8637 cyc/chunk)   speedup 0.31x
+   per-chunk cycles (head-avg, timing build): prefetch+G1 wait    724 | E1 u   1337 | G2 wait    194 | E2 U    352 | G2'/G3 wait    252 | E3+E4 state   3731 | out store    222 | prefetch issue   1831 | G1 issue(thr0)    524 | sum 9166

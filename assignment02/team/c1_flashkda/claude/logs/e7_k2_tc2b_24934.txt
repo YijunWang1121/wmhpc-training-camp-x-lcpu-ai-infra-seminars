@@ -1,0 +1,20 @@
+using /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/k2tc/k2_tc2b.cpython-312-x86_64-linux-gnu.so
+k2_tc smem bytes: 84224
+  G1 uT   rel 2.108610867529135e-07  outT rel 2.708029196223364e-07
+  G2 u2T  rel 0.002733220583106189
+  G2' out2 rel 0.003226060137508943
+  G3 kU   rel 0.9752098478146997
+  E4 Snew rel 0.9752365159550215
+  E3 staged out vs ref rel 0.0  gmem out chunk0 vs staged rel 0.0  gmem out vs flash rel 0.0
+  chunk1 S(smem) vs Snew rel 0.9752365159550215  KQ1 kd rel 1.4035220748363901  qd rel 1.5512831183145888  V1 rel 1.452211044342391
+  NaN tiles (chunk x head): []  hT nan: 0
+[T=256 H=4] tc-vs-flash: out rel 1.01e+00 hT rel 1.31e+00 | vs fp64 naive: out flash 5.28e-03 tc 1.01e+00 | hT flash 4.65e-03 tc 1.31e+00
+[T=1024 H=8] tc-vs-flash: out rel 9.99e-01 hT rel 1.36e+00 | vs fp64 naive: out flash 5.31e-03 tc 9.99e-01 | hT flash 4.41e-03 tc 1.36e+00
+[T=2048 H=4] tc-vs-flash: out rel 1.00e+00 hT rel 1.35e+00 | vs fp64 naive: out flash 5.22e-03 tc 1.00e+00 | hT flash 4.51e-03 tc 1.35e+00
+Traceback (most recent call last):
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/e7_k2tc.py", line 129, in <module>
+    timing()
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/e7_k2tc.py", line 120, in timing
+    print(f"[T={T} H={H}] SM clock now {mhz} MHz | K2 mma.sync {t_ref:8.1f} us ({t_ref/nchunk*mhz:6.0f} cyc/chunk)   K2 tcgen05 {t_tc:8.1f} us ({t_tc/nchunk*mhz:6.0f} cyc/chunk)   speedup {t_ref/t_tc:.2f}x")
+                                                                                                                                                                                             ~~~~~^~~~~
+ZeroDivisionError: float division by zero

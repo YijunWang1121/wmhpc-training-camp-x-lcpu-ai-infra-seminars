@@ -1,0 +1,1 @@
+/var/lib/slurm/slurmd/job24809/slurm_script: line 14: exp/e4_ablate.py: Permission denied

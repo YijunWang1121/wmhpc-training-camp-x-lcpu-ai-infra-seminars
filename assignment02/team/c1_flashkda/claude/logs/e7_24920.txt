@@ -1,0 +1,12 @@
+k2_tc smem bytes: 82176
+  G1 uT   rel 2.108610867529135e-07  outT rel 1.827145962574149e-07
+  G2 u2T  rel 0.0018499809735919562
+  G2' out2 rel 0.0027450498087214534
+  G3 kU   rel 0.0035579868487851866
+Traceback (most recent call last):
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/e7_k2tc.py", line 125, in <module>
+    debug_chunk0()
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/e7_k2tc.py", line 77, in debug_chunk0
+    print("  E4 Snew rel", r(d[8192 + 16384:].view(128, 128), Snew))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: shape '[128, 128]' is invalid for input of size 40960

@@ -1,0 +1,9 @@
+using /home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/k2tc/k2_tc2.cpython-312-x86_64-linux-gnu.so
+Traceback (most recent call last):
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/e7_k2tc.py", line 17, in <module>
+    spec = importlib.util.spec_from_file_location("k2_tc", so); k2_tc = importlib.util.module_from_spec(spec); spec.loader.exec_module(k2_tc)
+                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 813, in module_from_spec
+  File "<frozen importlib._bootstrap_external>", line 1293, in create_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+ImportError: dynamic module does not define module export function (PyInit_k2_tc)
