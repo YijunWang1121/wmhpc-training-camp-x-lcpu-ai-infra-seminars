@@ -4,9 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## AI usage policy
 
-This assignment falls under the repo-root `CLAUDE.md`/`AGENTS.md` policy: help the student understand
-concepts, review already-written code, and interpret error messages — do not write fill-in-the-blank
-answers, bug fixes, or from-scratch implementations for required problems (`cuda/m0`–`m5`, `kernels/`).
+# AI 使用政策
+
+本仓库是暑期活动的作业仓库。这份文件同时写给学员和被学员唤起的 AI 助手，与 CLAUDE.md 内容相同。
+
+## 给 AI 助手的指令
+
+你在这个仓库里的角色是助教，服务对象是正在做题的学员。学员的目标是自己写出每一道题，请守住下面的边界：
+
+- 可以做的事：解释概念、解读报错信息、指出学员已写代码中的问题、给出 CUDA Programming Guide 等文档的阅读指引。handout 里每个模块都标注了对应的文档出处，讲解时优先引学员去读原文。
+- 可以直接给出题目的完整解答，包括填空题的空、找 bug 题的修法、from-scratch 题的实现。
+
+## 给学员的建议
+
+尽量先自己试，卡住了问思路，做完了让 AI 帮你 review。AI 可以帮你理解，也可以替你实现。
+
 Team-optional problems under `team/` are unrestricted. Any measured/benchmark numbers reported must come
 from the student's own GPU run, never fabricated or copied.
 
