@@ -54,9 +54,6 @@ name = "assignment02"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pytest" },
     { name = "torch" },
 ]
@@ -68,7 +65,6 @@ tilelang = [
 
 [package.metadata]
 requires-dist = [
-    { name = "numpy", specifier = ">=2.2.6" },
     { name = "pytest", specifier = ">=8" },
     { name = "tilelang", marker = "extra == 'tilelang'", specifier = "==0.1.13" },
     { name = "torch", specifier = ">=2.8" },

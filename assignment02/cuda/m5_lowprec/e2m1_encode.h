@@ -15,7 +15,23 @@
 #include <math.h>
 
 __host__ __device__ inline uint8_t e2m1_encode(float v) {
-    // TODO: 实现。返回 4 bit 编码(bit3 符号,bit0-2 幅值格点下标)。
-    (void)v;
-    return 0;
+    // 幅值格点(下标 0-7):0, 0.5, 1, 1.5, 2, 3, 4, 6。相邻格点中点
+    // 依次是 0.25/0.75/1.25/1.75/2.5/3.5/5.0;round-to-nearest-even
+    // 在每个中点上都恰好偏向下标为偶数的那一侧(0/2/4/6 对应
+    // 0/1/2/4,都是"整数"格点),所以每段边界该并入哪一侧、包不包含
+    // 等号,直接由这条奇偶规则决定,不需要单独查表。
+    // signbit 而不是 v<0.f:要把 -0.0 的符号位也保留下来(判测里对
+    // 全部候选值取了负号镜像,包含 -0.0)。
+    uint8_t sign = signbit(v) ? 0x8 : 0x0;
+    float a = fabsf(v);
+    uint8_t mag;
+    if (a <= 0.25f)      mag = 0;  // -> 0
+    else if (a < 0.75f)  mag = 1;  // -> 0.5
+    else if (a <= 1.25f) mag = 2;  // -> 1
+    else if (a < 1.75f)  mag = 3;  // -> 1.5
+    else if (a <= 2.5f)  mag = 4;  // -> 2
+    else if (a < 3.5f)   mag = 5;  // -> 3
+    else if (a <= 5.0f)  mag = 6;  // -> 4
+    else                 mag = 7;  // -> 6,satfinite 饱和
+    return sign | mag;
 }
