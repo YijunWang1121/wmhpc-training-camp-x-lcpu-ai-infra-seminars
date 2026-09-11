@@ -64,3 +64,8 @@
   2.50×(T=32K);B·H=16/T=64K 2.14×;B·H=32 1.17×;B·H=64/96 0.5~0.64×。ncu(job 26240,`profiles/ncu_e9`):
   同一 kernel,grid 12→192,SM Active 8%→76%,单 SM 指标不变。交付文档 `K2_HIER.md`;REPORT §3.3.2、§0、§8 更新。
   CuTe 地板 kernel `exp/k2cute/k2_cute_floor.cu` 已写未编译,按 brief 顺序搁置到算法层收益确认之后。
+- E10(brief 第 9 步,分层扫描之后的 SM100 问题):`exp/e10_short_chain.py`,job 26271,1095 MHz。tcgen05 K2 vs
+  mma.sync K2 在短链多 CTA regime(T=512,H=148/296/592/1184):比值 0.66→0.73→0.75→0.75,两者都在 2 CTA/SM 饱和
+  (smem 98 KB vs smem 84 KB + TMEM 256 列),整卡 58 vs 81 chunks/us。结论:SM100 指令级特性在新 regime 仍无正收益,
+  杠杆是 smem 减负提高共驻数。写进 K2_HIER.md §11、REPORT §3.3.2。期间 /home/lcpu 共享盘写满(3.1T 100%),清了
+  自己的 ~/.cache/{uv,pip,vscode-cpptools} 才能落盘;E10 日志先写 /tmp 再拷回。

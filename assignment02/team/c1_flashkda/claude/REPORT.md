@@ -292,6 +292,11 @@ No-Eligible 65% vs 67%、每调度器 2.0 vs 1.5 个 warp),变的只是 grid 从
 里**第一条对 TP8 长序列有正收益的路线**,而且和指令集无关(还没碰 tcgen05)。剩余开销:phase 1 含两遍 K1
 (可省)、phase 2 的 NG 步 launch(可写成一个 kernel),纸面还能到 ~2.7×,见 `K2_HIER.md` §10。
 
+**分层之后 SM100 特性还能不能加分(E10,`K2_HIER.md` §11):不能。** 在 phase 1/3 的"很多短链共驻"regime 里
+直接对比 tcgen05 版 K2 与 mma.sync 版(T=512,H=148..1184):共驻把 tcgen05 从 0.63× 提到 0.75×,但两种指令都在
+2 CTA/SM 饱和——mma.sync 被 98 KB smem 卡住,tcgen05 被 84 KB smem + 256 列 TMEM 同样卡住,TMEM 没有放松共驻
+约束;整卡吞吐 58 vs 81 chunks/us。剩下的杠杆是 smem 减负(V-split)提高共驻数,与指令集无关。
+
 ### 3.4 compute-bound 还是 memory-bound(`profiles/ncu_fixed.txt`,`logs/e4_ablate_24844.txt`)
 
 纸面 AI:K2 每 chunk 851,968 MAC = 1.7 MFLOP,读 workspace 13.8 KB + v 4 KB、写 out 4 KB → 77 FLOP/B;
