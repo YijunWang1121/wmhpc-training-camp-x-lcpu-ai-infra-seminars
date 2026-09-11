@@ -46,14 +46,23 @@ __device__ inline void tmem_st16(uint32_t taddr, const uint32_t* r) {
 __device__ inline uint32_t pack2(float a, float b) { uint32_t r; asm("cvt.rn.bf16x2.f32 %0, %2, %1;" : "=r"(r) : "f"(a), "f"(b)); return r; }
 
 // gB: [N=128][K=144] bf16 K-major logical (row n = output k, cols k' then t);  gS0: [128 v][128 k'] bf16; gU: [128 v][16 t] bf16
-__global__ void k_scan(const __nv_bfloat16* gB, const __nv_bfloat16* gS0, const __nv_bfloat16* gU, float* gD, int mode, int iters, long long* cyc) {
+__device__ inline void bulk_1d(uint32_t dst, const void* src, uint32_t bytes, uint32_t mbar) {
+    asm volatile("cp.async.bulk.shared::cluster.global.mbarrier::complete_tx::bytes [%0], [%1], %2, [%3];" :: "r"(dst), "l"(src), "r"(bytes), "r"(mbar) : "memory");
+}
+__device__ inline void mbar_expect_tx(uint32_t mbar, uint32_t bytes) { asm volatile("mbarrier.arrive.expect_tx.shared::cta.b64 _, [%0], %1;" :: "r"(mbar), "r"(bytes) : "memory"); }
+constexpr int NTILE = 32;   // mode 2: per-CTA private ring of NTILE distinct B tiles (already in INTER layout in global)
+__global__ void k_scan(const __nv_bfloat16* gB, const __nv_bfloat16* gS0, const __nv_bfloat16* gU, float* gD, int mode, int iters, long long* cyc,
+                       const __nv_bfloat16* gBstream) {
     extern __shared__ __align__(1024) uint8_t smem[];
-    __nv_bfloat16* sB = (__nv_bfloat16*)smem;          // N x K INTER K-major: 128 x 144 -> 36 KB
-    __shared__ uint64_t mbar; __shared__ uint32_t s_taddr;
+    __nv_bfloat16* sB = (__nv_bfloat16*)smem;          // N x K INTER K-major: 128 x 144 -> 36 KB (stage 0)
+    __nv_bfloat16* sB1 = (__nv_bfloat16*)(smem + N * K * 2);   // stage 1 (mode 2)
+    __shared__ uint64_t mbar; __shared__ uint32_t s_taddr; __shared__ uint64_t ldbar[2];
     const int tid = threadIdx.x, warp = tid >> 5, lane = tid & 31;
     const uint32_t mb = smem_u32(&mbar);
     if (warp == 0) {
-        if (tid == 0) { asm volatile("mbarrier.init.shared::cta.b64 [%0], 1;" :: "r"(mb)); asm volatile("fence.mbarrier_init.release.cluster;"); }
+        if (tid == 0) { asm volatile("mbarrier.init.shared::cta.b64 [%0], 1;" :: "r"(mb));
+                        asm volatile("mbarrier.init.shared::cta.b64 [%0], 1;" :: "r"(smem_u32(&ldbar[0]))); asm volatile("mbarrier.init.shared::cta.b64 [%0], 1;" :: "r"(smem_u32(&ldbar[1])));
+                        asm volatile("fence.mbarrier_init.release.cluster;"); }
         asm volatile("tcgen05.alloc.cta_group::1.sync.aligned.shared::cta.b32 [%0], %1;" :: "r"(smem_u32(&s_taddr)), "r"(TM_COLS));
         asm volatile("tcgen05.relinquish_alloc_permit.cta_group::1.sync.aligned;");
     }
@@ -81,13 +90,25 @@ __global__ void k_scan(const __nv_bfloat16* gB, const __nv_bfloat16* gS0, const 
     const uint32_t bBase = smem_u32(sB);
     uint32_t phase = 0;
     const int steps = mode == 0 ? 2 : iters;
+    const __nv_bfloat16* myB = gBstream + (size_t)blockIdx.x * NTILE * N * K;
+    const uint32_t tileBytes = N * K * 2;
+    if (mode == 2 && tid == 0) { mbar_expect_tx(smem_u32(&ldbar[0]), tileBytes); bulk_1d(smem_u32(sB), myB, tileBytes, smem_u32(&ldbar[0])); }
     long long t0 = clock64();
     for (int it = 0; it < steps; ++it) {
+        const int s = it & 1;
+        const uint32_t bCur = mode == 2 ? (s ? smem_u32(sB1) : smem_u32(sB)) : bBase;
+        if (mode == 2) {
+            if (tid == 0 && it + 1 < steps) {   // prefetch next tile into the other stage (freed by the MMA of it-1, waited below)
+                uint32_t ns = (it + 1) & 1; mbar_expect_tx(smem_u32(&ldbar[ns]), tileBytes);
+                bulk_1d(ns ? smem_u32(sB1) : smem_u32(sB), myB + (size_t)((it + 1) % NTILE) * N * K, tileBytes, smem_u32(&ldbar[ns]));
+            }
+            mbar_wait(smem_u32(&ldbar[s]), (it >> 1) & 1);
+        }
         if (warp == 0) {
             asm volatile("tcgen05.fence::after_thread_sync;");
             if (lane == 0) {
                 for (int ks = 0; ks < K / 16; ++ks)      // 9 k16 steps: A cols advance 8 per k16; B K-major INTER: 2 core mats per k16
-                    mma_ts(taddr + TM_ACC, taddr + TM_A + ks * 8, make_desc(bBase + ks * 2 * (N / 8) * 128, (N / 8) * 128, 128), idesc, ks != 0);
+                    mma_ts(taddr + TM_ACC, taddr + TM_A + ks * 8, make_desc(bCur + ks * 2 * (N / 8) * 128, (N / 8) * 128, 128), idesc, ks != 0);
                 mma_commit(mb);
             }
             __syncwarp();
@@ -143,17 +164,23 @@ int main() {
     __nv_bfloat16 *dB, *dS, *dU; float* dD; long long* dcyc;
     CK(cudaMalloc(&dB, N * K * 2)); CK(cudaMalloc(&dS, M * KS * 2)); CK(cudaMalloc(&dU, M * KU * 2)); CK(cudaMalloc(&dD, M * KS * 4)); CK(cudaMalloc(&dcyc, 4096 * 8));
     CK(cudaMemcpy(dB, hB.data(), N * K * 2, cudaMemcpyHostToDevice)); CK(cudaMemcpy(dS, hS.data(), M * KS * 2, cudaMemcpyHostToDevice)); CK(cudaMemcpy(dU, hU.data(), M * KU * 2, cudaMemcpyHostToDevice));
-    size_t smem = (size_t)N * K * 2 + 1024;
+    size_t smem = (size_t)N * K * 2 * 2 + 1024;
+    // mode 2 buffer: 4*nsm CTAs x NTILE tiles in INTER layout (same values as hB for tile 0, random others)
+    const int maxCta = 4 * nsm;
+    std::vector<__nv_bfloat16> hStream((size_t)maxCta * NTILE * N * K);
+    { std::vector<__nv_bfloat16> tileI(N * K); for (int i = 0; i < N * K; ++i) { int n = i / K, k = i % K; tileI[kinter(n, k, N)] = hB[i]; }
+      for (size_t t = 0; t < (size_t)maxCta * NTILE; ++t) std::copy(tileI.begin(), tileI.end(), hStream.begin() + t * N * K); }
+    __nv_bfloat16* dStream; CK(cudaMalloc(&dStream, hStream.size() * 2)); CK(cudaMemcpy(dStream, hStream.data(), hStream.size() * 2, cudaMemcpyHostToDevice));
     CK(cudaFuncSetAttribute(k_scan, cudaFuncAttributeMaxDynamicSharedMemorySize, (int)smem));
-    k_scan<<<1, 128, smem>>>(dB, dS, dU, dD, 0, 2, dcyc); CK(cudaDeviceSynchronize());
+    k_scan<<<1, 128, smem>>>(dB, dS, dU, dD, 0, 2, dcyc, dStream); CK(cudaDeviceSynchronize());
     std::vector<float> got(M * KS); CK(cudaMemcpy(got.data(), dD, M * KS * 4, cudaMemcpyDeviceToHost));
     double md = 0, mr = 0; long bad = 0;
     for (int i = 0; i < M * KS; ++i) { double d = fabs(got[i] - ref[i]); md = fmax(md, d); mr = fmax(mr, fabs(ref[i])); if (d > 1e-2 * fmax(1.0, fabs(ref[i]))) { if (bad < 4) printf("  MISMATCH [%d,%d] got %g want %g\n", i / KS, i % KS, got[i], ref[i]); bad++; } }
     printf("correctness (2 dependent steps, A from TMEM, bf16 repack): max|diff| %.3e (max|ref| %.3e)  %s\n", md, mr, bad ? "FAIL" : "PASS");
     if (bad) return 1;
-    auto run = [&](int nblk, int iters) {
-        k_scan<<<nblk, 128, smem>>>(dB, dS, dU, dD, 1, iters, dcyc); CK(cudaDeviceSynchronize());
-        k_scan<<<nblk, 128, smem>>>(dB, dS, dU, dD, 1, iters, dcyc); CK(cudaDeviceSynchronize());
+    auto run = [&](int nblk, int iters, int md = 1) {
+        k_scan<<<nblk, 128, smem>>>(dB, dS, dU, dD, md, iters, dcyc, dStream); CK(cudaDeviceSynchronize());
+        k_scan<<<nblk, 128, smem>>>(dB, dS, dU, dD, md, iters, dcyc, dStream); CK(cudaDeviceSynchronize());
         std::vector<long long> h(nblk); CK(cudaMemcpy(h.data(), dcyc, nblk * 8, cudaMemcpyDeviceToHost));
         double s = 0; for (auto x : h) s += x; return s / nblk / iters;
     };
@@ -164,6 +191,10 @@ int main() {
     printf("   1 CTA per SM (all) : %7.1f cyc/step\n", cN);
     printf("   2 CTA per SM       : %7.1f cyc/step per CTA  -> SM throughput %.0f cyc/step\n", c2N, c2N / 2);
     printf("   4 CTA per SM (queued, TMEM allows 2): %7.1f cyc/step per CTA\n", c4N);
+    double s1 = run(1, iters, 2), sN = run(nsm, iters, 2), s2N = run(2 * nsm, iters, 2);
+    printf("mode 2: B tile (36 KB) streamed from HBM every step via cp.async.bulk, double-buffered (per-CTA private tiles):\n");
+    printf("   1 CTA on 1 SM      : %7.1f cyc/step\n   1 CTA per SM (all) : %7.1f cyc/step   (%.2f TB/s aggregate B traffic @1.095 GHz)\n   2 CTA per SM       : %7.1f cyc/step per CTA -> SM throughput %.0f cyc/step (%.2f TB/s)\n",
+           s1, sN, (double)nsm * N * K * 2 / sN * 1.095e9 / 1e12, s2N, s2N / 2, (double)2 * nsm * N * K * 2 / s2N * 1.095e9 / 1e12);
     printf("reference: FlashKDA K2 mma.sync chunk = 2732 cyc (1 CTA/SM), 2139 cyc/chunk-wave at 2 CTA/SM (E10)\n");
     return 0;
 }

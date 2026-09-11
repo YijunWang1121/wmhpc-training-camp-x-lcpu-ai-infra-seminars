@@ -218,6 +218,58 @@ def bench(B, T, H, Gs, lb=-5.0, iters=50, p2_modes=("seq32", "seqbf+graph", "mer
                   f"| p1a {tm['p1a']*1e3:7.1f} p1b {tm['p1b']*1e3:7.1f} p2 {tm['p2']*1e3:7.1f} p3 {tm['p3']*1e3:7.1f} us"
                   f"  | out max_abs {d.max().item():.2e} mean {d.mean().item():.2e}")
 
+
+def precision_sweep():
+    """精度随 T 增长(hier vs baseline vs fp64)、分段调用状态传递、弱衰减下的计时不变性。"""
+    from fla_kda_ref.naive import naive_recurrent_kda
+    scale = 1 / math.sqrt(D)
+    print("== 精度随 T(H=4, G=32, 与 fp64 递推对拍;lb=-0.01 组间携带 ~70% 状态) ==")
+    for lb in (-0.01, -0.1):
+        for T in (1024, 4096, 8192, 16384):
+            B, H = 1, 4
+            q, k, v, g, beta, A_log, dt_bias, h0 = make_inputs(B, T, H)
+            out_ref = torch.zeros_like(v); hT_ref = torch.zeros_like(h0)
+            baseline(q, k, v, g, beta, A_log, dt_bias, h0, scale, lb, out_ref, hT_ref)
+            hier = Hier(B, T, H, 32, lb); hier.merge_p1 = True; hier.p2_dtype = torch.bfloat16
+            out = torch.zeros_like(v); hT = hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out)
+            gd = lambda x: x.double()
+            g_act = lb * torch.sigmoid(torch.exp(gd(A_log)).view(1, 1, H, 1) * (gd(g) + gd(dt_bias).view(1, 1, H, D)))
+            o64, S64 = naive_recurrent_kda(gd(q), gd(k), gd(v), g_act, torch.sigmoid(gd(beta)), scale,
+                                           initial_state=gd(h0).transpose(-1, -2).contiguous(), output_final_state=True)
+            S64 = S64.transpose(-1, -2)
+            def rr(a, b):
+                a = a.double(); b = b.double(); d = (a - b)
+                return (d.pow(2).mean().sqrt() / (b.pow(2).mean().sqrt() + 1e-30)).item(), d.abs().max().item()
+            ro, mo = rr(out, out_ref); rh, mh = rr(hT, hT_ref)
+            bo64, _ = rr(out_ref, o64); ho64, _ = rr(out, o64); bh64, _ = rr(hT_ref, S64); hh64, _ = rr(hT, S64)
+            print(f"  lb={lb:6} T={T:6d}: hier-vs-base out rel_rms {ro:.2e} (max {mo:.1e}), hT {rh:.2e} (max {mh:.1e}) | vs fp64: out base {bo64:.3e} hier {ho64:.3e}, hT base {bh64:.3e} hier {hh64:.3e}")
+    print("== 分段调用:hier(T1) 的末状态作为 hier(T2) 的 h0,对比一次 baseline(T1+T2) ==")
+    for lb in (-0.01, -0.1):
+        B, H, T1, T2 = 1, 4, 2048, 2048
+        q, k, v, g, beta, A_log, dt_bias, h0 = make_inputs(B, T1 + T2, H)
+        out_ref = torch.zeros_like(v); hT_ref = torch.zeros_like(h0)
+        baseline(q, k, v, g, beta, A_log, dt_bias, h0, scale, lb, out_ref, hT_ref)
+        out = torch.zeros_like(v)
+        h1 = Hier(B, T1, H, 32, lb); h1.merge_p1 = True; h1.p2_dtype = torch.bfloat16
+        S1 = h1.run(q[:, :T1].contiguous(), k[:, :T1].contiguous(), v[:, :T1].contiguous(), g[:, :T1].contiguous(), beta[:, :T1].contiguous(), A_log, dt_bias, h0, scale, out[:, :T1])
+        o1 = out[:, :T1].clone()
+        h2 = Hier(B, T2, H, 32, lb); h2.merge_p1 = True; h2.p2_dtype = torch.bfloat16
+        o2 = torch.zeros(B, T2, H, D, device="cuda", dtype=torch.bfloat16)
+        S2 = h2.run(q[:, T1:].contiguous(), k[:, T1:].contiguous(), v[:, T1:].contiguous(), g[:, T1:].contiguous(), beta[:, T1:].contiguous(), A_log, dt_bias, S1.contiguous(), scale, o2)
+        o_cat = torch.cat([o1, o2], 1)
+        err(f"  lb={lb} out  seg(hier) vs baseline(T1+T2)", o_cat, out_ref)
+        err(f"  lb={lb} hT   seg(hier) vs baseline(T1+T2)", S2, hT_ref)
+    print("== 计时与 lb 无关(B=1 H=12 T=8192 G=32,lb=-1 vs -0.01) ==")
+    for lb in (-1.0, -0.01):
+        B, T, H = 1, 8192, 12
+        q, k, v, g, beta, A_log, dt_bias, h0 = make_inputs(B, T, H)
+        out_ref = torch.zeros_like(v); hT_ref = torch.zeros_like(h0)
+        tb = timeit(lambda: baseline(q, k, v, g, beta, A_log, dt_bias, h0, scale, lb, out_ref, hT_ref))
+        hier = Hier(B, T, H, 32, lb); hier.merge_p1 = True; hier.p2_dtype = torch.bfloat16
+        out = torch.zeros_like(v); hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out); hier.capture_p2()
+        th = timeit(lambda: hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out))
+        print(f"  lb={lb}: baseline {tb:.1f} us, hier {th:.1f} us, {tb/th:.2f}x")
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "check"
     if mode == "check":
@@ -226,6 +278,8 @@ if __name__ == "__main__":
             for (B, T, H, G) in [(1, 2048, 4, 8), (2, 1000, 3, 8), (1, 8192, 12, 32)]:
                 for p2 in ("seq32", "seqbf", "merged:seqbf", "merged:treebf"):
                     check(B, T, H, G, lb=lb, p2=p2)
+    elif mode == "precision":
+        precision_sweep()
     elif mode == "bench":
         Gs = [16, 32, 64]
         for (B, T, H) in [(1, 8192, 12), (1, 32768, 12), (1, 16384, 32), (1, 65536, 16), (4, 8192, 16), (1, 8192, 96)]:
