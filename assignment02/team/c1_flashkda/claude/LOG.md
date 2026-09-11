@@ -78,3 +78,7 @@
   放共享目录才能在计算节点跑)。结论:tcgen05 版慢在线程侧指令反而 +11%、242 寄存器、1 warp/调度器;SASS 采样 45%
   在 E4 的 FFMA/F2FP/LDS/STS/地址计算,30% 在 mbarrier 轮询;可改项(状态常驻 TMEM + 256 线程、INV 直接 INTER、
   E1 精简)加起来 4460 → ≈2550,对 mma.sync 2732 只是打平(1.07×),因为 2030 的异步链地板占 mma.sync 的 74%。
+- E13(用户澄清:问的是分层扫描 workload 上 tcgen05 行不行):`exp/mb_scan.cu`,稠密 compose 链步
+  S_new^T=[S^T|u^T]@[M_i^T|K'_i](M128 N128 K144),A 常驻 TMEM(TS 形式),fp32→bf16 TMEM 重打包,TMEM 200 列。
+  一次编译通过、正确性 PASS(TMEM A 打包:lane=行,每列两个相邻 k)。1054 cycle/步 @1 CTA/SM,705/步 @2 CTA/SM,
+  比 K2 每 chunk 快 2.6~3.0×。投影分层流水线 710 → ~325 us(对原版 ~4.2×)。写进 K2_HIER §13、REPORT §7.2/§8。

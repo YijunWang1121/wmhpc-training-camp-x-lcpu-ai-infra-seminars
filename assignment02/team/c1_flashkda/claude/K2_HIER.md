@@ -264,3 +264,43 @@ tcgen05 K2(`k2_tc2`)和 FlashKDA K2 在 T=512(=一个组)、H 从 148 扫到 118
 | 4 | 64 | 256 | 16K | 3645 ± 46 | 11863 (0.31×) | 11103 (0.33×) | **0.33×** (G=64) | 1.00× |
 | 4 | 64 | 256 | 64K | 14550 ± 39 | 48742 (0.30×) | 44755 (0.33×) | **0.33×** (G=64) | 1.00× |
 
+## 13. tcgen05 对分层扫描 workload 本身有没有用?——有,而且是它唯一有用的地方(E13,`exp/mb_scan.cu`)
+
+前面所有 tcgen05 的负结果都是针对"原始 K2 链"(每 chunk 5 个一边只有 16 的小 GEMM)。分层扫描把组摘要的计算换成了
+另一种形状:每 chunk 一次 **稠密 M128×N128×K144** 的 compose
+`S_new^T = [S^T | u^T] @ [M_i^T | K'_i]`(M_i = D_i − K'_i^T w_i 与 S 无关,可全部 chunk 并行先材料化),组间前缀是
+128³ compose——这恰好是 tcgen05 4088 MAC/cycle 的甜点形状,而 E8 用 cuBLAS bmm 输是因为一个 tile 一个 CTA、launch-bound。
+
+microbench(`mb_scan.cu`,1095 MHz):A=[S^T|u^T] 常驻 TMEM(72 列,tcgen05.mma 的 TS 形式直接从 TMEM 取 A),
+B 在 smem(INTER K-major,36 KB),每步 9 条 K16 指令 → commit → mbarrier → 4 个 warp 把 fp32 累加器
+tcgen05.ld → cvt.bf16x2 → tcgen05.st 写回 A 区(状态从不落 smem);TMEM 共 200 列 → 每 SM 2 个 CTA。
+对 CPU 参考(步间同样舍入 bf16)2 步依赖链 max|diff| 4.9e-4 **PASS**(顺带验证了 TMEM A 操作数的打包:lane=行,
+每 32-bit 列放相邻两个 k)。
+
+| | cycle/step | MAC/cycle | 对照 FlashKDA K2 每 chunk |
+|--|--:|--:|--:|
+| 1 CTA/SM | **1054** | 2238(峰值 55%) | 2732 → **2.6×** |
+| 2 CTA/SM(共驻) | 1410/CTA = **705/SM** | 3330 | 2139 → **3.0×** |
+
+每步做 2.4 MMAC(K2 每 chunk 0.85 MMAC 的 2.8×),但时间只有它的 40%:因为链上只有 9 条发射 + 1 次往返 + 1 次 TMEM
+重打包,没有 §7.2 里那 45% 的线程侧 smem RMW,也没有 N=16 的按条计费。
+
+**投影到整条分层流水线**(B=1,H=12,T=8192,1095 MHz;现版 = 710 µs,原版 = 1366 µs):
+
+| phase | 现版(K2 当积木) | tcgen05 稠密 compose 版(估) | 依据 |
+|--|--:|--:|--|
+| M_i 材料化(全部 chunk 并行,一次 M128N128K16 + 对角) | — | ~13 µs | 6144 个 tile / (148×2) 波 × ~700 cycle |
+| 1(A_g 与 B_g 两条链 × 32 步) | 494 µs | ~80 µs | 192 CTA 一波,32×2×1410 cycle |
+| 2(组间前缀,16 步 128³,单 kernel) | 136 µs | ~12 µs | 16×~800 cycle |
+| 3(回放出输出,仍是 K2) | 220 µs | 220 µs | 不变 |
+| **合计** | **710 µs** | **~325 µs** | 对现版 **~2.2×**,对原版 **~4.2×** |
+
+限制与前提:(a) phase 3 仍要一遍 mma.sync K2(要 q@S 和 Aqk@v 的输出,这部分 tcgen05 还是老问题),所以上限被
+phase 3 钉住;(b) 组摘要在 bf16 里逐步 compose,误差与 K2 每 chunk 的 bf16 状态舍入同量级(E8/E9 已测过这类误差);
+(c) 需要一个前置 kernel 从 K1 的 workspace 算 w_i = INV(β⊙k_d)、u_i = INV(β⊙v)、M_i = D_i − k_rᵀ w_i 并写成 B 操作数
+布局;(d) 这是投影,phase 1 的完整 kernel(TMA 逐 chunk 载入 36 KB 的 B、两条链、末状态写回)还没写。
+
+**结论修正:** "tcgen05 在 K2 上没有正收益"这句话只对原始 K2 链成立。分层扫描之后,组摘要变成了稠密 128³ 链,
+tcgen05 在这个形状上比 mma.sync K2 快 2.6~3.0×(已实测),整条流水线纸面还能再拿 ~2.2×。这也是本报告里 SM100
+特性第一次出现正收益——不是因为指令快,而是因为算法重构把负载改成了它擅长的形状。下一步优先级:先把 phase 1 的
+tcgen05 compose kernel 写完并对拍,再做 phase 2 的单 kernel。
