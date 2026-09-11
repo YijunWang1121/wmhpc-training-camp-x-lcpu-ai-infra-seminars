@@ -16,7 +16,7 @@ job 24819/24904 全程 2032 MHz**(`logs/clock_<job>.csv`),因此跨作业比较�
 | 讨论点 2 | tcgen05 M 最小 64,CHUNK=16 当 M 不合法;**把 D=128 当 M、CHUNK 当 N/K** 则 5 个 GEMM 全部合法。但 microbench:N=16 的指令只有 653 MAC/cycle/SM(比 mma.sync 峰值 1020 还低),N≥128 才 4088;一次 issue→commit→wait 固定 ≈265 cycle,TMEM 回读 128×16 要 139 cycle。纸面 ≈2900 cycle/chunk;实测(§7)只换指令 = **0.62×**,把线程侧工作全删掉的地板也只有 1.34×。 |
 | 讨论点 3 | 候选:V-split(fla 就是 BV=32/64)、多 head/CTA、persistent、2-CTA。**只有缩短单 chunk 链才能帮 TP8 长序列**;V-split 只压缩吞吐型的 ~40%,多 head/CTA 只提高 SM 利用率不减时延,persistent 只对 varlen 负载均衡有用。 |
 | 讨论点 5 | 用 fp64 递推做金标准、fla fp32 状态做对照:flash_kda 的 hT 误差是 Triton 的 1.9–2.3×(4.5e-3 vs 2.4e-3),**不随 T 增长**(512→16384 平),弱衰减(gate→0)时 7.4e-3 vs 4.2e-3;bf16/fp32 状态 I/O 分段调用逐位相同。 |
-| 挑战 | 写了 tcgen05 版 K2(`exp/k2tc/k2_tc2.cu`,消费原 workspace,TMA + SW128 + 双缓冲 TMEM 累加器),**与 FlashKDA 逐位一致**(out/hT rel 0.0),三轮 profile 驱动的迭代从 0.31× 到 **0.62×**;消融:去掉状态更新 = 1.02×,去掉全部线程侧 epilogue = 1.34×(异步 MMA 链的地板 2030 cycle)。**没有正收益**,原因量化在 §7。 |
+| 挑战 | 写了 tcgen05 版 K2(`exp/k2tc/k2_tc2.cu`,消费原 workspace,TMA + SW128 + 双缓冲 TMEM 累加器),**与 FlashKDA 逐位一致**(out/hT rel 0.0),三轮 profile 驱动的迭代从 0.31× 到 **0.62×**;消融:去掉状态更新 = 1.02×,去掉全部线程侧 epilogue = 1.34×(异步 MMA 链的地板 2030 cycle)。**没有正收益**,原因量化在 §7。追问"换 CUTLASS 而不是手写会不会翻盘"——从 CUTLASS 4.7.0 源码验证不会(§7.1):单线程发射是 tcgen05 的 ISA 约束、K2 的 chunk 间递推是真数据依赖,两者都不是"代码写得不够专业"能解释的,换库无效。 |
 | 讨论点 6 | **v2 不出 sm100a 专版**:算术峰值不是瓶颈(tensor pipe 30%),换指令后每 chunk 3 次 MMA 往返 + 4 次 TMEM 回读的固定延迟 ≈ 1800 cycle 抵掉了 4× 的峰值;真正的杠杆是架构无关的——CHUNK=32 + 中点重标定(纸面 K2 −30%)、去掉 800 cycle 的流水线同步开销、V-split 提高 TP8 下的 SM 利用率。 |
 
 ## 1. 对象与形状
@@ -228,6 +228,42 @@ No-Eligible 77%,每调度器 1 warp;stall 前三 wait 0.97、short_scoreboard 0.
 **要真的赢需要什么(不在"只换指令"范围内)。** 状态常驻 TMEM 做 A 操作数(去掉 32 KB/chunk 的 smem 往返,但 g 缩放仍要 ld/st
 128 列 fp32 ≈ 900 cycle)、或把 g 折进 GEMM(A=[diag(g) | k_r^T],K=144,bf16 的 g 有 2^-9 相对误差)、或 CHUNK=32 摊薄往返
 ——都是算法/数值改动,不是指令替换;且地板实验说明就算线程侧归零也只有 1.34×。
+
+### 7.1 追问:换成 CUTLASS(而不是手写 PTX)会不会翻盘?
+
+动机:assignment02 M4 里同一张卡上做过对照——手写 tcgen05 GEMM 只有 cuBLAS 的 29-35%,换成 CUTLASS
+的 collective builder(开箱即用、没调参)直接跳到 **≈95%**(`70_blackwell_fp16_gemm`,4096³,992.9
+TFLOPS vs cuBLAS ≈1049)。既然 CUTLASS 对"写得不够好"的 GEMM 有这么大的救场能力,值得倒回来问:
+K2 换成 CUTLASS 而不是手写 PTX,会不会把 0.62× 翻成正收益?—— **不会,而且这次不是猜,是从 CUTLASS
+自己的源码里验证的。**
+
+1. **单线程发射是 tcgen05 的 ISA 约束,不是 CUTLASS 会不会写代码的问题。** 直接读 CUTLASS 4.7.0 的
+   `cute/arch/mma_sm100_umma.hpp`(本机 `/tmp/cutlass`,B300 4090 台 SM100 GEMM 全靠它):文件里全部
+   62 处 `tcgen05.mma` 内联汇编,逐一核对,**每一处都被 `if (cute::elect_one_sync()) { ... }` 包着**
+   (50 处 `elect_one_sync` 调用,一一对应,无例外),和我们 `k2_tc2.cu`/`03_pipeline.cu` 里手写的
+   `elect.sync` 门控写法完全一样。也就是说"8 条 tcgen05.mma 由一个线程发 525 cycle"(§7 原因 4)是
+   硬件指令本身的限制——`tcgen05.mma` 就是设计成由每个 warp 里恰好一个被选中的线程发射,CUTLASS 作为
+   软件库无法绕开指令集的这条规则,用不用 CUTLASS,这笔发射延迟都躲不掉。
+2. **CUTLASS 的深流水线机制吃的是"独立工作项",K2 恰好一个独立工作项都没有。** M4 的经验(4.3 pipeline
+   实验)已经证明:软件流水线要有收益,前提是存在多个**互不依赖、可以乱序完成、只在最后累加**的工作单元
+   ——GEMM 里是 K 维的多个 tile,grid 里是多个互相独立的 block。CUTLASS 的 warp specialization、
+   多级 TMA 预取全部构建在这个前提上。K2 恰恰相反:同一个 (seq, head) 里第 chunk N+1 个 chunk 的 G1
+   要读的是**第 N 个 chunk 更新完的状态 S**(见 §7 链路图,"上一 chunk 的 out epilogue 与本 chunk 的
+   G1 重叠"这句话本身就说明重叠的只有不碰状态的 out 部分,状态更新完成前 G1 无法开始)——这是一条真数据
+   依赖的递推链,不是可结合的归约。512 个 chunk 严格串行,CUTLASS 的深流水线在这种"零独立工作项"的负载
+   里没有任何东西可以拿来流水,和"换不换库"无关。
+3. **CUTLASS 的示例库里找不到任何递推/scan 类核**(`examples/` 搜 recurrent/scan/ssm/mamba/linear_attn
+   零命中)——这不是 CUTLASS 还没来得及支持,而是它整套 collective builder 的抽象(mainloop = 对 K 维
+   可结合地归约,tile scheduler = 把独立输出 tile 分给 CTA/cluster)从设计上就是给"大 GEMM/conv"这类
+   问题定义域用的,K2 这种"每 chunk 一次状态 RMW + 强制串行"的负载根本不在这个域里,不存在"CUTLASS 版
+   K2"这种东西能直接套用现成 mainloop——真要用 CUTLASS 也只是借它的 `tcgen05.mma`/TMA atom 当更方便
+   的封装去手写同一条链,不会改变链本身的延迟结构,等价于我们已经做的 `k2_tc2.cu`。
+
+**结论:这次"重新想一遍"没有推翻讨论点 6,反而把它补上了一条本来缺的论据**——即便换成生产级库,K2 的
+瓶颈依然成立,因为瓶颈来自 tcgen05 的 ISA 硬约束(证据 1)和算法本身的串行递推(证据 2、3),不是"我们
+代码写得不够专业"。这和 M4 里 CUTLASS 能救场的情况(hand-written GEMM 写得不够好,存在大量独立工作项
+没利用上)是两类不同的问题——M4 的差距是**工程质量差距**,CUTLASS 能补;K2 的差距是**算法结构性的**,
+换任何库都补不了,能救的只有 §7 末尾"要真的赢需要什么"里列的那几条算法/数值改动。
 
 ## 8. 综合结论(讨论点 6):v2 不出 sm100a 专版
 
