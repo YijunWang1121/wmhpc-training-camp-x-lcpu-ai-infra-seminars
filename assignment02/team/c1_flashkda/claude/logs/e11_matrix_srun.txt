@@ -1,0 +1,65 @@
+srun: job 26278 queued and waiting for resources
+srun: job 26278 has been allocated resources
+rounds=5 lb=-1.0 G in (32, 64); per-round warmup 5 + timed iters (50 / 30 for big);  free mem 287 GB
+ B   H      T  B*H |   baseline us (mean±std) |     G=32 us (mean±std)     x |     G=64 us (mean±std)     x | best  gated
+ 1  12   4096   12 |        396.5 ±     0.2  |        267.0 ±    0.2  1.48 |        312.9 ±    0.0  1.27 | G=32   1.48x  gated 1.48x
+ 1  12  16384   12 |       1549.8 ±     0.1  |        793.1 ±    0.3  1.95 |        717.8 ±    0.2  2.16 | G=64   2.16x  gated 2.16x
+ 1  12  65536   12 |       6126.6 ±     0.1  |       2787.9 ±   70.9  2.20 |       2410.6 ±   35.2  2.54 | G=64   2.54x  gated 2.54x
+ 1  12 131072   12 |      12240.8 ±     1.1  |       5457.6 ±  115.8  2.24 |       4597.5 ±    0.2  2.66 | G=64   2.66x  gated 2.66x
+ 1  16   4096   16 |        407.8 ±     0.1  |        286.7 ±    0.6  1.42 |        332.0 ±    0.2  1.23 | G=32   1.42x  gated 1.42x
+ 1  16  16384   16 |       1571.1 ±     0.2  |        932.7 ±    0.4  1.68 |        827.7 ±    0.1  1.90 | G=64   1.90x  gated 1.90x
+ 1  16  65536   16 |       6219.5 ±     0.4  |       3445.7 ±   64.0  1.80 |       2970.7 ±   35.5  2.09 | G=64   2.09x  gated 2.09x
+ 1  16 131072   16 |      12435.0 ±    20.3  |       6841.8 ±  143.9  1.82 |       5886.9 ±   71.7  2.11 | G=64   2.11x  gated 2.11x
+ 1  32   4096   32 |        432.5 ±     0.1  |        448.3 ±    0.1  0.96 |        439.9 ±    0.1  0.98 | G=64   0.98x  gated 1.00x
+ 1  32  16384   32 |       1661.9 ±     0.1  |       1562.8 ±    0.2  1.06 |       1461.0 ±    0.4  1.14 | G=64   1.14x  gated 1.14x
+ 1  32  65536   32 |       6600.7 ±     5.8  |       6148.3 ±    0.3  1.07 |       5537.5 ±    4.2  1.19 | G=64   1.19x  gated 1.19x
+ 1  32 131072   32 |      13162.7 ±    19.9  |      12260.9 ±  115.2  1.07 |      11248.0 ±   39.0  1.17 | G=64   1.17x  gated 1.17x
+ 1  64   4096   64 |        479.8 ±     0.3  |        775.4 ±    0.3  0.62 |        748.7 ±    0.1  0.64 | G=64   0.64x  gated 1.00x
+ 1  64  16384   64 |       1855.0 ±     3.2  |       2841.6 ±   13.9  0.65 |       2710.0 ±   13.4  0.68 | G=64   0.68x  gated 1.00x
+ 1  64  65536   64 |       7363.0 ±     6.3  |      11447.5 ±   10.5  0.64 |      10971.4 ±    5.5  0.67 | G=64   0.67x  gated 1.00x
+ 1  64 131072   64 |      14705.3 ±     1.9  |      23296.7 ±   22.0  0.63 |      21892.3 ±   53.5  0.67 | G=64   0.67x  gated 1.00x
+ 2  12   4096   24 |        420.7 ±     0.0  |        457.1 ±    0.1  0.92 |        429.7 ±    0.3  0.98 | G=64   0.98x  gated 1.00x
+ 2  12  16384   24 |       1619.8 ±     0.2  |       1566.1 ±    0.3  1.03 |       1336.8 ±    0.2  1.21 | G=64   1.21x  gated 1.21x
+ 2  12  65536   24 |       6403.3 ±     0.3  |       5785.9 ±    0.2  1.11 |       4786.4 ±    0.4  1.34 | G=64   1.34x  gated 1.34x
+ 2  12 131072   24 |      12802.1 ±     0.9  |      12160.2 ±    2.5  1.05 |       9719.6 ±    0.8  1.32 | G=64   1.32x  gated 1.32x
+ 2  16   4096   32 |        432.3 ±     0.1  |        516.9 ±    0.3  0.84 |        471.3 ±    0.2  0.92 | G=64   0.92x  gated 1.00x
+ 2  16  16384   32 |       1663.6 ±     0.1  |       1861.2 ±    0.3  0.89 |       1608.0 ±    0.2  1.03 | G=64   1.03x  gated 1.03x
+ 2  16  65536   32 |       6587.9 ±     0.4  |       7237.1 ±  116.3  0.91 |       6060.8 ±   48.3  1.09 | G=64   1.09x  gated 1.09x
+ 2  16 131072   32 |      13153.9 ±     0.5  |      14499.9 ±  197.1  0.91 |      12096.1 ±    3.9  1.09 | G=64   1.09x  gated 1.09x
+ 2  32   4096   64 |        479.6 ±     0.1  |        846.8 ±    0.1  0.57 |        783.2 ±    0.2  0.61 | G=64   0.61x  gated 1.00x
+ 2  32  16384   64 |       1852.7 ±     0.4  |       3167.3 ±    0.2  0.58 |       2844.5 ±    0.2  0.65 | G=64   0.65x  gated 1.00x
+ 2  32  65536   64 |       7357.3 ±     2.2  |      12739.8 ±   18.4  0.58 |      11471.1 ±   35.9  0.64 | G=64   0.64x  gated 1.00x
+ 2  32 131072   64 |      14697.7 ±     1.0  |      25930.4 ±    2.3  0.57 |      23095.8 ±   37.8  0.64 | G=64   0.64x  gated 1.00x
+ 2  64   4096  128 |        573.1 ±     1.9  |       1520.2 ±    0.8  0.38 |       1434.7 ±    4.2  0.40 | G=64   0.40x  gated 1.00x
+ 2  64  16384  128 |       2249.1 ±    19.8  |       5993.7 ±   13.9  0.38 |       5611.9 ±    8.7  0.40 | G=64   0.40x  gated 1.00x
+ 2  64  65536  128 |       8845.3 ±     2.1  |      24427.0 ±   82.9  0.36 |      22405.0 ±   54.2  0.39 | G=64   0.39x  gated 1.00x
+ 2  64 131072  128 |      17667.4 ±     1.2  |      50019.8 ±  125.7  0.35 |      45343.1 ±  115.1  0.39 | G=64   0.39x  gated 1.00x
+ 4  12   4096   48 |        455.1 ±     0.1  |        712.3 ±    0.2  0.64 |        674.4 ±    0.2  0.67 | G=64   0.67x  gated 1.00x
+ 4  12  16384   48 |       1754.6 ±     0.1  |       2570.1 ±    0.2  0.68 |       2294.6 ±    0.3  0.76 | G=64   0.76x  gated 1.00x
+ 4  12  65536   48 |       6973.2 ±    19.7  |      10148.0 ±  119.9  0.69 |       8809.2 ±   23.4  0.79 | G=64   0.79x  gated 1.00x
+ 4  12 131072   48 |      13887.1 ±     0.7  |      20927.1 ±    0.7  0.66 |      17898.0 ±   23.9  0.78 | G=64   0.78x  gated 1.00x
+ 4  16   4096   64 |        479.6 ±     0.1  |        854.3 ±    0.3  0.56 |        786.4 ±    0.2  0.61 | G=64   0.61x  gated 1.00x
+ 4  16  16384   64 |       1850.4 ±     0.1  |       3212.3 ±    0.5  0.58 |       2859.0 ±    0.3  0.65 | G=64   0.65x  gated 1.00x
+ 4  16  65536   64 |       7352.4 ±     6.0  |      12986.8 ±    1.7  0.57 |      11593.2 ±   10.5  0.63 | G=64   0.63x  gated 1.00x
+ 4  16 131072   64 |      14687.8 ±     0.6  |      26703.3 ±    8.8  0.55 |      23358.5 ±   17.5  0.63 | G=64   0.63x  gated 1.00x
+ 4  32   4096  128 |        572.8 ±     1.6  |       1525.5 ±    0.4  0.38 |       1440.6 ±    4.1  0.40 | G=64   0.40x  gated 1.00x
+ 4  32  16384  128 |       2243.0 ±    15.6  |       6038.7 ±   22.8  0.37 |       5621.1 ±    9.3  0.40 | G=64   0.40x  gated 1.00x
+ 4  32  65536  128 |       8837.6 ±     1.3  |      24715.0 ±   29.2  0.36 |      22541.5 ±   32.3  0.39 | G=64   0.39x  gated 1.00x
+ 4  32 131072  128 |      17655.6 ±     1.3  |      51156.6 ±  177.2  0.35 |      45759.3 ±   83.5  0.39 | G=64   0.39x  gated 1.00x
+ 4  64   4096  256 |        914.1 ±    13.3  |       2945.9 ±   31.0  0.31 |       2779.4 ±   29.9  0.33 | G=64   0.33x  gated 1.00x
+ 4  64  16384  256 |       3645.0 ±    46.4  |      11862.8 ±   22.3  0.31 |      11102.8 ±   13.3  0.33 | G=64   0.33x  gated 1.00x
+ 4  64  65536  256 |      14550.1 ±    39.0  |      48741.5 ±   30.5  0.30 |      44755.2 ±   29.7  0.33 | G=64   0.33x  gated 1.00x
+[W911 13:47:40.531665628 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 17179869184 bytes (free: 12184059904, total: 287428640768).
+[W911 13:47:40.531961386 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 17179869184 bytes (free: 12184059904, total: 287428640768).
+Traceback (most recent call last):
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/e11_matrix.py", line 30, in <module>
+    o = torch.zeros_like(v); hh.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, o); hh.capture_p2()
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lcpu/00737767/wmhpc-training-camp-x-lcpu-ai-infra-seminars/assignment02/team/c1_flashkda/claude/exp/e9_hier.py", line 120, in run
+    self.v2 = torch.cat([vf, torch.zeros_like(vf)], 2).contiguous()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 16.00 GiB. GPU 0 has a total capacity of 267.69 GiB of which 11.35 GiB is free. Including non-PyTorch memory, this process has 256.33 GiB memory in use. Of the allocated memory 255.41 GiB is allocated by PyTorch, with 40.00 MiB allocated in private pools (e.g., CUDA Graphs), and 85.89 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+clock samples:
+     50 2032
+     12 1957
+     11 1965
