@@ -5,6 +5,7 @@ import sys, math, time, statistics, torch
 import e9_hier as e
 
 R = int(sys.argv[1]) if len(sys.argv) > 1 else 5
+MODE = sys.argv[2] if len(sys.argv) > 2 else "tree"   # tree | lb1
 lb = -1.0
 Gs = (32, 64)
 free_b = torch.cuda.mem_get_info()[0]
@@ -12,13 +13,13 @@ free_b = torch.cuda.mem_get_info()[0]
 def iters_for(B, T, H): return 50 if B * T * H <= 1 * 65536 * 16 else 30
 
 rows = []
-print(f"rounds={R} lb={lb} G in {Gs}; per-round warmup 5 + timed iters (50 / 30 for big);  free mem {free_b/1e9:.0f} GB")
+print(f"mode={MODE} rounds={R} lb={lb} G in {Gs}; per-round warmup 5 + timed iters (50 / 30 for big);  free mem {free_b/1e9:.0f} GB")
 print(f"{'B':>2} {'H':>3} {'T':>6} {'B*H':>4} | {'baseline us (mean±std)':>24} | " + " | ".join(f"{'G='+str(G)+' us (mean±std)':>22} {'x':>5}" for G in Gs) + " | best  gated")
 for B in (1, 2, 4):
     for H in (12, 16, 32, 64):
         for T in (4096, 16384, 65536, 131072):
             need = B * T * H * 128 * 2 * (5 + 6)   # q,k,v,g,out + merged(2x q,k,v,g,out) + scratch, bytes
-            if need > 0.7 * free_b:
+            if need > 0.5 * free_b or (B == 4 and H == 64 and T == 131072):
                 print(f"{B:>2} {H:>3} {T:>6} {B*H:>4} | skipped (needs ~{need/1e9:.0f} GB)"); continue
             q, k, v, g, beta, A_log, dt_bias, h0 = e.make_inputs(B, T, H)
             scale = 1 / math.sqrt(e.D); it = iters_for(B, T, H)
@@ -26,8 +27,10 @@ for B in (1, 2, 4):
             base_fn = lambda: e.baseline(q, k, v, g, beta, A_log, dt_bias, h0, scale, lb, out_ref, hT_ref)
             hiers = {}
             for G in Gs:
-                hh = e.Hier(B, T, H, G, lb); hh.merge_p1 = True; hh.p2_mode = "seq"; hh.p2_dtype = torch.bfloat16
-                o = torch.zeros_like(v); hh.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, o); hh.capture_p2()
+                hh = e.Hier(B, T, H, G, lb); hh.merge_p1 = (MODE == "tree"); hh.p2_mode = "seq"; hh.p2_dtype = torch.bfloat16
+                if MODE == "lb1": hh.lookback = 1
+                o = torch.zeros_like(v); hh.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, o)
+                if MODE == "tree": hh.capture_p2()
                 hiers[G] = (hh, o)
             tb, th = [], {G: [] for G in Gs}
             for r in range(R):

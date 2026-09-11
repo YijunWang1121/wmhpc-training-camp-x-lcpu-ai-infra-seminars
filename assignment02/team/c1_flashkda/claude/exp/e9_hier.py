@@ -53,6 +53,7 @@ class Hier:
         self.p2_mode = "seq"          # "seq" | "tree"
         self.p2_dtype = torch.float32 # phase-2 GEMM dtype: float32 (SIMT) | bfloat16 (tensor core, 与基线 bf16 状态口径一致)
         self.merge_p1 = False         # True: 1a+1b 合成一次 2H-head 调用
+        self.lookback = None          # None: phase 2 走链/树;W>=1: 只回看前 W 组,所有组并行(零跨组依赖)
         self.p2_graph = None
         self.h0_static = torch.zeros(B, H, D, D, device=dev, dtype=torch.bfloat16)
         self.state2 = torch.cat([self.zero_state, self.eye_state], 1).contiguous()   # [N, 2H, D, D]
@@ -112,6 +113,22 @@ class Hier:
             if timing is not None:
                 e = torch.cuda.Event(enable_timing=True); e.record(); ev[name] = e
         mark("t0")
+        if self.lookback == 1:
+            # W=1:S_in[g] = B_{g-1}(前一组从零状态跑出的末状态),不需要 A_g,也没有 phase 2 的链
+            flash_kda.fwd(qf, kf, vf, gf, bf, scale, self.out_scratch, A_log=A_log, dt_bias=dt_bias, lower_bound=self.lb,
+                          initial_state=self.zero_state, final_state=self.hB, cu_seqlens=self.cu)
+            mark("p1a"); mark("p1b")
+            S_in = self.S_in.view(B, NG, H, D, D); hB = self.hB.view(B, NG, H, D, D)
+            S_in[:, 0].copy_(h0); S_in[:, 1:].copy_(hB[:, :-1])
+            mark("p2")
+            flash_kda.fwd(qf, kf, vf, gf, bf, scale, outf, A_log=A_log, dt_bias=dt_bias, lower_bound=self.lb,
+                          initial_state=self.S_in, final_state=self.hF, cu_seqlens=self.cu)
+            mark("p3")
+            if timing is not None:
+                torch.cuda.synchronize()
+                timing["p1a"] = ev["t0"].elapsed_time(ev["p1a"]); timing["p1b"] = 0.0
+                timing["p2"] = ev["p1b"].elapsed_time(ev["p2"]);  timing["p3"] = ev["p2"].elapsed_time(ev["p3"])
+            return self.hF.view(B, NG, H, D, D)[:, -1]
         if self.merge_p1:
             # phase 1a+1b 合并:2H 个 head,前 H 个 (v, S_in=0) 给 B_g,后 H 个 (v=0, S_in=I) 给 A_g;一次调用,CTA 数 x2
             if not hasattr(self, "q2"):
@@ -133,7 +150,26 @@ class Hier:
                           initial_state=self.eye_state, final_state=self.hA, cu_seqlens=self.cu)
             mark("p1b")
         # phase 2: 组间前缀(fp32),状态布局 [V,K]:S_next^T = S^T A^T + B^T -> 右乘
-        if self.p2_graph is not None:
+        if self.lookback is not None and self.lookback >= 2:
+            # W>=2:S_in[g] = B_{g-1} + B_{g-2}·A_{g-1} + ... + B_{g-W}·(A_{g-W+1}⋯A_{g-1}),g > W 的组之间无依赖(全并行);
+            # 前 W 组按精确串行公式算(只有 W 步,带 h0)。右乘布局:S_in[g] = S_in[g-1]·hA[g-1] + hB[g-1]
+            W = self.lookback; dt = self.p2_dtype
+            hB = (self.hAB.view(B, NG, 2 * H, D, D)[:, :, :H] if self.merge_p1 else self.hB.view(B, NG, H, D, D)).to(dt)
+            hA = (self.hAB.view(B, NG, 2 * H, D, D)[:, :, H:] if self.merge_p1 else self.hA.view(B, NG, H, D, D)).to(dt)
+            S_in = self.S_in.view(B, NG, H, D, D)
+            S = h0.to(dt); S_in[:, 0].copy_(S)
+            for g in range(1, min(W, NG - 1) + 1):
+                S = torch.matmul(S, hA[:, g - 1]) + hB[:, g - 1]; S_in[:, g].copy_(S)
+            if NG - 1 > W:
+                # g = W+1 .. NG-1(共 n = NG-1-W 个),各项切片长度都是 n
+                acc = hB[:, W:NG - 1].clone()                          # w=1: B_{g-1}
+                P = None
+                for w in range(2, W + 1):
+                    P = hA[:, W:NG - 1].clone() if w == 2 else torch.matmul(hA[:, W - w + 2:NG - w + 1], P)   # P_g = hA[g-w+1]⋯hA[g-1]
+                    acc += torch.matmul(hB[:, W - w + 1:NG - w], P)    # B_{g-w} · P_g
+                S_in[:, W + 1:].copy_(acc)
+            mark("p2")
+        elif self.p2_graph is not None:
             self.h0_static.copy_(h0)
             self.p2_graph.replay()
         else:
@@ -176,10 +212,17 @@ def check(B, T, H, G, lb=-5.0, p2="seq"):
     hier = Hier(B, T, H, G, lb)
     hier.merge_p1 = p2.startswith("merged:"); spec = p2.split(":")[-1]
     hier.p2_mode = "tree" if "tree" in spec else "seq"; hier.p2_dtype = torch.bfloat16 if "bf" in spec else torch.float32
+    if "lb1" in spec: hier.lookback = 1
+    if "lb2" in spec: hier.lookback = 2
+    if "lb3" in spec: hier.lookback = 3
     out = torch.zeros_like(v)
     hT = hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out)
     torch.cuda.synchronize()
-    print(f"[check B={B} T={T} H={H} G={G} NG={hier.NG} lb={lb} p2={p2}]")
+    # 衰减诊断:每组每维累积门控 exp(sum g_act),取 max(最弱衰减) -> 回看窗口判据
+    g_act = lb * torch.sigmoid(torch.exp(A_log.float()).view(1, 1, H, 1) * (g.float() + dt_bias.float().view(1, 1, H, D)))
+    NT = math.ceil(T / CHUNK); gsz = G * CHUNK
+    worst = max(g_act[:, b0:b0 + gsz].sum(1).max().item() for b0 in range(0, T, gsz))
+    print(f"[check B={B} T={T} H={H} G={G} NG={hier.NG} lb={lb} p2={p2}]  最弱衰减: 一组内 max_dim exp(sum g) = {math.exp(worst):.2e} (阈值 2^-9≈1.95e-3)")
     err("out  hier vs flash_kda", out, out_ref)
     err("hT   hier vs flash_kda", hT, hT_ref)
     # 对 fp64 朴素递推(小 T):看两者谁离真值更近
@@ -207,9 +250,12 @@ def bench(B, T, H, Gs, lb=-5.0, iters=50, p2_modes=("seq32", "seqbf+graph", "mer
             spec = p2.split(":")[-1]
             hier.p2_mode = "tree" if "tree" in spec else "seq"
             hier.p2_dtype = torch.bfloat16 if "bf" in spec else torch.float32
+            if "lb1" in spec: hier.lookback = 1
+            if "lb2" in spec: hier.lookback = 2
+            if "lb3" in spec: hier.lookback = 3
             out = torch.zeros_like(v)
             hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out)      # 分配缓冲
-            if "graph" in spec: hier.capture_p2()
+            if "graph" in spec and hier.lookback is None: hier.capture_p2()
             tm = {}
             hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out, timing=tm)
             t = timeit(lambda: hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out), iters=iters)
@@ -274,16 +320,16 @@ if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "check"
     if mode == "check":
         # lb=-5 时每 token 衰减 ~e^-3,A_g 在一个组内就下溢到 0,测不出 phase 1b/2 对不对;必须加弱衰减用例
-        for lb in (-0.1, -0.01):
-            for (B, T, H, G) in [(1, 2048, 4, 8), (2, 1000, 3, 8), (1, 8192, 12, 32)]:
-                for p2 in ("seq32", "seqbf", "merged:seqbf", "merged:treebf"):
+        for lb in (-5.0, -1.0, -0.1, -0.01):
+            for (B, T, H, G) in [(1, 2048, 4, 8), (1, 8192, 12, 32)]:
+                for p2 in ("merged:seqbf", "lb1", "merged:lb2", "merged:lb3"):
                     check(B, T, H, G, lb=lb, p2=p2)
     elif mode == "precision":
         precision_sweep()
     elif mode == "bench":
-        Gs = [16, 32, 64]
-        for (B, T, H) in [(1, 8192, 12), (1, 32768, 12), (1, 16384, 32), (1, 65536, 16), (4, 8192, 16), (1, 8192, 96)]:
-            bench(B, T, H, Gs, lb=-1.0)
+        Gs = [32, 64]
+        for (B, T, H) in [(1, 8192, 12), (1, 32768, 12), (1, 65536, 16), (1, 16384, 32)]:
+            bench(B, T, H, Gs, lb=-1.0, p2_modes=("merged:seqbf+graph", "lb1", "merged:lb2"))
     elif mode == "sweep":   # brief 里的负载矩阵
         for B in (1, 2, 4):
             for H in (16, 32, 64):

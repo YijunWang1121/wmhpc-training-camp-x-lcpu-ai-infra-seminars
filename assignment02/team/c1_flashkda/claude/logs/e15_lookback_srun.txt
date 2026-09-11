@@ -1,0 +1,198 @@
+srun: job 26314 queued and waiting for resources
+srun: job 26314 has been allocated resources
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-5.0 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 3.98e-119 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  out  hier vs fp64                    max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  hT   flash_kda vs fp64               max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+  hT   hier vs fp64                    max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-5.0 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 3.98e-119 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  out  hier vs fp64                    max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  hT   flash_kda vs fp64               max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+  hT   hier vs fp64                    max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-5.0 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 3.98e-119 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  out  hier vs fp64                    max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  hT   flash_kda vs fp64               max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+  hT   hier vs fp64                    max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-5.0 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 3.98e-119 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  out  hier vs fp64                    max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  hT   flash_kda vs fp64               max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+  hT   hier vs fp64                    max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-5.0 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 0.00e+00 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-5.0 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 0.00e+00 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-5.0 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 0.00e+00 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-5.0 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 0.00e+00 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-1.0 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 2.09e-24 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  out  hier vs fp64                    max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  hT   flash_kda vs fp64               max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+  hT   hier vs fp64                    max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-1.0 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 2.09e-24 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  out  hier vs fp64                    max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  hT   flash_kda vs fp64               max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+  hT   hier vs fp64                    max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-1.0 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 2.09e-24 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  out  hier vs fp64                    max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  hT   flash_kda vs fp64               max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+  hT   hier vs fp64                    max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-1.0 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 2.09e-24 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  out  hier vs fp64                    max_abs=4.843e-04 mean_abs=1.910e-05 max_rel=6.114e+01 rel_rms=5.512e-03
+  hT   flash_kda vs fp64               max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+  hT   hier vs fp64                    max_abs=5.196e-03 mean_abs=2.017e-04 max_rel=1.513e+01 rel_rms=4.576e-03
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-1.0 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 9.18e-103 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-1.0 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 9.18e-103 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-1.0 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 9.18e-103 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-1.0 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 9.18e-103 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.1 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 4.29e-03 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=4.883e-04 mean_abs=6.047e-06 max_rel=1.221e+02 rel_rms=1.674e-03
+  hT   hier vs flash_kda               max_abs=3.906e-03 mean_abs=1.522e-05 max_rel=4.755e+00 rel_rms=7.455e-04
+  out  flash_kda vs fp64               max_abs=6.486e-04 mean_abs=5.566e-05 max_rel=9.109e+01 rel_rms=5.946e-03
+  out  hier vs fp64                    max_abs=6.486e-04 mean_abs=5.568e-05 max_rel=8.354e+01 rel_rms=5.949e-03
+  hT   flash_kda vs fp64               max_abs=6.604e-03 mean_abs=5.596e-04 max_rel=4.278e+02 rel_rms=4.935e-03
+  hT   hier vs fp64                    max_abs=6.604e-03 mean_abs=5.595e-04 max_rel=4.278e+02 rel_rms=4.934e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.1 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 4.29e-03 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=4.883e-04 mean_abs=6.160e-06 max_rel=1.221e+02 rel_rms=1.689e-03
+  hT   hier vs flash_kda               max_abs=3.906e-03 mean_abs=1.542e-05 max_rel=1.168e+01 rel_rms=7.456e-04
+  out  flash_kda vs fp64               max_abs=6.486e-04 mean_abs=5.566e-05 max_rel=9.109e+01 rel_rms=5.946e-03
+  out  hier vs fp64                    max_abs=6.486e-04 mean_abs=5.568e-05 max_rel=9.109e+01 rel_rms=5.950e-03
+  hT   flash_kda vs fp64               max_abs=6.604e-03 mean_abs=5.596e-04 max_rel=4.278e+02 rel_rms=4.935e-03
+  hT   hier vs fp64                    max_abs=6.604e-03 mean_abs=5.592e-04 max_rel=4.278e+02 rel_rms=4.930e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.1 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 4.29e-03 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=4.883e-04 mean_abs=6.048e-06 max_rel=1.221e+02 rel_rms=1.674e-03
+  hT   hier vs flash_kda               max_abs=3.906e-03 mean_abs=1.522e-05 max_rel=4.755e+00 rel_rms=7.455e-04
+  out  flash_kda vs fp64               max_abs=6.486e-04 mean_abs=5.566e-05 max_rel=9.109e+01 rel_rms=5.946e-03
+  out  hier vs fp64                    max_abs=6.486e-04 mean_abs=5.568e-05 max_rel=8.354e+01 rel_rms=5.949e-03
+  hT   flash_kda vs fp64               max_abs=6.604e-03 mean_abs=5.596e-04 max_rel=4.278e+02 rel_rms=4.935e-03
+  hT   hier vs fp64                    max_abs=6.604e-03 mean_abs=5.595e-04 max_rel=4.278e+02 rel_rms=4.934e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.1 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 4.29e-03 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=4.883e-04 mean_abs=6.048e-06 max_rel=1.221e+02 rel_rms=1.674e-03
+  hT   hier vs flash_kda               max_abs=3.906e-03 mean_abs=1.522e-05 max_rel=4.755e+00 rel_rms=7.455e-04
+  out  flash_kda vs fp64               max_abs=6.486e-04 mean_abs=5.566e-05 max_rel=9.109e+01 rel_rms=5.946e-03
+  out  hier vs fp64                    max_abs=6.486e-04 mean_abs=5.568e-05 max_rel=8.354e+01 rel_rms=5.949e-03
+  hT   flash_kda vs fp64               max_abs=6.604e-03 mean_abs=5.596e-04 max_rel=4.278e+02 rel_rms=4.935e-03
+  hT   hier vs fp64                    max_abs=6.604e-03 mean_abs=5.595e-04 max_rel=4.278e+02 rel_rms=4.934e-03
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.1 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 6.26e-11 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=2.441e-04 mean_abs=8.807e-09 max_rel=3.052e+01 rel_rms=6.369e-05
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.1 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 6.26e-11 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=2.441e-04 mean_abs=8.807e-09 max_rel=3.052e+01 rel_rms=6.369e-05
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.1 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 6.26e-11 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=2.441e-04 mean_abs=8.807e-09 max_rel=3.052e+01 rel_rms=6.369e-05
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.1 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 6.26e-11 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=2.441e-04 mean_abs=8.807e-09 max_rel=3.052e+01 rel_rms=6.369e-05
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.01 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 5.80e-01 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=1.465e-03 mean_abs=1.321e-04 max_rel=7.324e+02 rel_rms=6.111e-03
+  hT   hier vs flash_kda               max_abs=1.172e-02 mean_abs=1.234e-03 max_rel=2.448e+02 rel_rms=5.041e-03
+  out  flash_kda vs fp64               max_abs=1.294e-03 mean_abs=1.707e-04 max_rel=3.391e+02 rel_rms=6.909e-03
+  out  hier vs fp64                    max_abs=1.177e-03 mean_abs=1.728e-04 max_rel=3.391e+02 rel_rms=7.002e-03
+  hT   flash_kda vs fp64               max_abs=1.156e-02 mean_abs=1.725e-03 max_rel=4.572e+02 rel_rms=6.029e-03
+  hT   hier vs fp64                    max_abs=1.096e-02 mean_abs=1.732e-03 max_rel=4.914e+02 rel_rms=6.054e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.01 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 5.80e-01 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=4.492e-02 mean_abs=4.150e-03 max_rel=2.942e+04 rel_rms=1.848e-01
+  hT   hier vs flash_kda               max_abs=1.875e-01 mean_abs=2.805e-02 max_rel=6.326e+03 rel_rms=9.863e-02
+  out  flash_kda vs fp64               max_abs=1.294e-03 mean_abs=1.707e-04 max_rel=3.391e+02 rel_rms=6.909e-03
+  out  hier vs fp64                    max_abs=4.498e-02 mean_abs=4.159e-03 max_rel=6.668e+03 rel_rms=1.848e-01
+  hT   flash_kda vs fp64               max_abs=1.156e-02 mean_abs=1.725e-03 max_rel=4.572e+02 rel_rms=6.029e-03
+  hT   hier vs fp64                    max_abs=1.904e-01 mean_abs=2.805e-02 max_rel=8.410e+03 rel_rms=9.859e-02
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.01 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 5.80e-01 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=1.367e-02 mean_abs=1.236e-03 max_rel=7.050e+03 rel_rms=5.743e-02
+  hT   hier vs flash_kda               max_abs=6.445e-02 mean_abs=9.043e-03 max_rel=1.873e+04 rel_rms=3.213e-02
+  out  flash_kda vs fp64               max_abs=1.294e-03 mean_abs=1.707e-04 max_rel=3.391e+02 rel_rms=6.909e-03
+  out  hier vs fp64                    max_abs=1.357e-02 mean_abs=1.250e-03 max_rel=3.841e+03 rel_rms=5.745e-02
+  hT   flash_kda vs fp64               max_abs=1.156e-02 mean_abs=1.725e-03 max_rel=4.572e+02 rel_rms=6.029e-03
+  hT   hier vs fp64                    max_abs=6.451e-02 mean_abs=9.062e-03 max_rel=9.769e+02 rel_rms=3.208e-02
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-0.01 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 5.80e-01 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=4.913e-03 mean_abs=4.068e-04 max_rel=2.441e+03 rel_rms=1.883e-02
+  hT   hier vs flash_kda               max_abs=2.490e-02 mean_abs=3.262e-03 max_rel=7.011e+02 rel_rms=1.186e-02
+  out  flash_kda vs fp64               max_abs=1.294e-03 mean_abs=1.707e-04 max_rel=3.391e+02 rel_rms=6.909e-03
+  out  hier vs fp64                    max_abs=5.106e-03 mean_abs=4.269e-04 max_rel=6.265e+02 rel_rms=1.899e-02
+  hT   flash_kda vs fp64               max_abs=1.156e-02 mean_abs=1.725e-03 max_rel=4.572e+02 rel_rms=6.029e-03
+  hT   hier vs fp64                    max_abs=2.817e-02 mean_abs=3.381e-03 max_rel=9.588e+02 rel_rms=1.196e-02
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.01 p2=merged:seqbf]  最弱衰减: 一组内 max_dim exp(sum g) = 9.54e-02 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=1.953e-03 mean_abs=1.145e-04 max_rel=5.493e+02 rel_rms=5.423e-03
+  hT   hier vs flash_kda               max_abs=1.172e-02 mean_abs=1.088e-03 max_rel=3.346e+02 rel_rms=4.734e-03
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.01 p2=lb1]  最弱衰减: 一组内 max_dim exp(sum g) = 9.54e-02 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=1.953e-03 mean_abs=1.359e-04 max_rel=1.099e+03 rel_rms=6.420e-03
+  hT   hier vs flash_kda               max_abs=1.172e-02 mean_abs=1.093e-03 max_rel=2.200e+02 rel_rms=4.754e-03
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.01 p2=merged:lb2]  最弱衰减: 一组内 max_dim exp(sum g) = 9.54e-02 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=1.465e-03 mean_abs=1.145e-04 max_rel=9.766e+02 rel_rms=5.424e-03
+  hT   hier vs flash_kda               max_abs=1.172e-02 mean_abs=1.092e-03 max_rel=4.939e+02 rel_rms=4.752e-03
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-0.01 p2=merged:lb3]  最弱衰减: 一组内 max_dim exp(sum g) = 9.54e-02 (阈值 2^-9≈1.95e-3)
+  out  hier vs flash_kda               max_abs=1.465e-03 mean_abs=1.144e-04 max_rel=9.766e+02 rel_rms=5.421e-03
+  hT   hier vs flash_kda               max_abs=1.172e-02 mean_abs=1.090e-03 max_rel=3.346e+02 rel_rms=4.741e-03
+
+===== B=1 T=8192 H=12  (B*H=12 CTA in baseline K2, NT=512) =====
+  baseline flash_kda.fwd(K1+K2):   1353.9 us
+  G= 32 NG=  16 CTAs=   192 merged:seqbf+graph :    679.9 us  speedup  1.99x  | p1a   597.9 p1b     3.5 p2   127.1 p3   211.8 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  16 CTAs=   192 lb1                :    428.7 us  speedup  3.16x  | p1a   213.4 p1b     0.0 p2    13.6 p3   212.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  16 CTAs=   192 merged:lb2         :    714.9 us  speedup  1.89x  | p1a   355.2 p1b     2.6 p2   156.7 p3   213.5 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=   8 CTAs=    96 merged:seqbf+graph :    702.3 us  speedup  1.93x  | p1a   771.3 p1b     3.7 p2    68.5 p3   256.8 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=   8 CTAs=    96 lb1                :    516.5 us  speedup  2.62x  | p1a   261.4 p1b     0.0 p2    10.6 p3   261.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=   8 CTAs=    96 merged:lb2         :    751.7 us  speedup  1.80x  | p1a   380.0 p1b     2.3 p2   120.2 p3   257.4 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=32768 H=12  (B*H=12 CTA in baseline K2, NT=2048) =====
+  baseline flash_kda.fwd(K1+K2):   5326.1 us
+  G= 32 NG=  64 CTAs=   768 merged:seqbf+graph :   2378.3 us  speedup  2.24x  | p1a  1492.6 p1b     3.5 p2   534.6 p3   638.8 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  64 CTAs=   768 lb1                :   1287.1 us  speedup  4.14x  | p1a   636.6 p1b     0.0 p2    19.3 p3   640.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  64 CTAs=   768 merged:lb2         :   2191.5 us  speedup  2.43x  | p1a  1182.9 p1b     2.7 p2   378.1 p3   640.3 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  32 CTAs=   384 merged:seqbf+graph :   2142.3 us  speedup  2.49x  | p1a  1446.6 p1b     3.8 p2   270.0 p3   665.4 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  32 CTAs=   384 lb1                :   1334.1 us  speedup  3.99x  | p1a   661.8 p1b     0.0 p2    14.7 p3   664.6 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  32 CTAs=   384 merged:lb2         :   2094.3 us  speedup  2.54x  | p1a  1195.1 p1b     2.7 p2   240.8 p3   662.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=65536 H=16  (B*H=16 CTA in baseline K2, NT=4096) =====
+  baseline flash_kda.fwd(K1+K2):  10749.3 us
+  G= 32 NG= 128 CTAs=  2048 merged:seqbf+graph :   5688.1 us  speedup  1.89x  | p1a  3353.7 p1b     3.5 p2  1117.2 p3  1551.3 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG= 128 CTAs=  2048 lb1                :   3092.7 us  speedup  3.48x  | p1a  1537.1 p1b     0.0 p2    31.1 p3  1529.9 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG= 128 CTAs=  2048 merged:lb2         :   5435.2 us  speedup  1.98x  | p1a  3028.2 p1b     2.8 p2   891.8 p3  1529.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  64 CTAs=  1024 merged:seqbf+graph :   5031.9 us  speedup  2.14x  | p1a  3254.6 p1b     3.7 p2   544.6 p3  1529.7 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  64 CTAs=  1024 lb1                :   3058.7 us  speedup  3.51x  | p1a  1520.4 p1b     0.0 p2    21.3 p3  1521.7 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  64 CTAs=  1024 merged:lb2         :   4938.3 us  speedup  2.18x  | p1a  2927.6 p1b     2.7 p2   488.6 p3  1527.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=16384 H=32  (B*H=32 CTA in baseline K2, NT=1024) =====
+  baseline flash_kda.fwd(K1+K2):   2873.1 us
+  G= 32 NG=  32 CTAs=  1024 merged:seqbf+graph :   2589.8 us  speedup  1.11x  | p1a  1784.4 p1b     3.5 p2   292.0 p3   793.4 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  32 CTAs=  1024 lb1                :   1599.2 us  speedup  1.80x  | p1a   797.0 p1b     0.0 p2    21.9 p3   793.6 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  32 CTAs=  1024 merged:lb2         :   2769.1 us  speedup  1.04x  | p1a  1496.0 p1b     2.7 p2   486.6 p3   794.1 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  16 CTAs=   512 merged:seqbf+graph :   2457.7 us  speedup  1.17x  | p1a  1791.1 p1b     3.5 p2   147.6 p3   808.8 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  16 CTAs=   512 lb1                :   1624.0 us  speedup  1.77x  | p1a   808.7 p1b     0.0 p2    15.0 p3   805.9 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 64 NG=  16 CTAs=   512 merged:lb2         :   2587.8 us  speedup  1.11x  | p1a  1500.2 p1b     2.4 p2   278.0 p3   812.4 us  | out max_abs 0.00e+00 mean 0.00e+00
