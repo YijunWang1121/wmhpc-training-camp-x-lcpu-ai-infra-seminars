@@ -316,6 +316,69 @@ def precision_sweep():
         th = timeit(lambda: hier.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, out))
         print(f"  lb={lb}: baseline {tb:.1f} us, hier {th:.1f} us, {tb/th:.2f}x")
 
+def precision_lookback():
+    """W=1/W=2 回看版的精度:对 fp64 真值,与原版、树版逐项对比;随 T 与 lb 扫;含衰减判据、分段调用。"""
+    from fla_kda_ref.naive import naive_recurrent_kda
+    scale = 1 / math.sqrt(D)
+    def rr(a, b):
+        a = a.double(); b = b.double(); d = (a - b)
+        return (d.pow(2).mean().sqrt() / (b.pow(2).mean().sqrt() + 1e-30)).item()
+    def mk(B, T, H, G, lb, lookback=None):
+        h = Hier(B, T, H, G, lb); h.merge_p1 = True; h.p2_dtype = torch.bfloat16; h.lookback = lookback; return h
+    print("== 对 fp64 真值:原版 / 树版 / W=1 / W=2(H=4,随 T 与 lb;'衰减'= 所有组里最弱的一组 max_dim exp(sum g)) ==")
+    print(f"  {'lb':>6} {'G':>3} {'T':>6} {'衰减':>9} | out: base / tree / W1 / W2      | hT: base / tree / W1 / W2      | W1-vs-base out / hT")
+    for lb in (-5.0, -1.0, -0.1, -0.01):
+        for G in (32, 64):
+            for T in (1024, 4096, 8192, 16384):
+                if G == 64 and T not in (4096, 16384): continue
+                B, H = 1, 4
+                q, k, v, g, beta, A_log, dt_bias, h0 = make_inputs(B, T, H)
+                out_ref = torch.zeros_like(v); hT_ref = torch.zeros_like(h0)
+                baseline(q, k, v, g, beta, A_log, dt_bias, h0, scale, lb, out_ref, hT_ref)
+                res = {}
+                for name, lk in (("tree", None), ("W1", 1), ("W2", 2)):
+                    h = mk(B, T, H, G, lb, lk); o = torch.zeros_like(v); S = h.run(q, k, v, g, beta, A_log, dt_bias, h0, scale, o)
+                    torch.cuda.synchronize(); res[name] = (o, S)
+                gd = lambda x: x.double()
+                g_act = lb * torch.sigmoid(torch.exp(gd(A_log)).view(1, 1, H, 1) * (gd(g) + gd(dt_bias).view(1, 1, H, D)))
+                o64, S64 = naive_recurrent_kda(gd(q), gd(k), gd(v), g_act, torch.sigmoid(gd(beta)), scale,
+                                               initial_state=gd(h0).transpose(-1, -2).contiguous(), output_final_state=True)
+                S64 = S64.transpose(-1, -2)
+                gsz = G * CHUNK
+                worst = max(g_act[:, b0:b0 + gsz].sum(1).max().item() for b0 in range(0, T, gsz))
+                eo = [rr(out_ref, o64)] + [rr(res[n][0], o64) for n in ("tree", "W1", "W2")]
+                eh = [rr(hT_ref, S64)] + [rr(res[n][1], S64) for n in ("tree", "W1", "W2")]
+                flag = "" if math.exp(worst) < 2 ** -9 else "  <- 判据不成立,W=1 不该启用"
+                print(f"  {lb:6} {G:3d} {T:6d} {math.exp(worst):9.2e} | " + " / ".join(f"{x:.2e}" for x in eo) + " | " +
+                      " / ".join(f"{x:.2e}" for x in eh) + f" | {rr(res['W1'][0], out_ref):.1e} / {rr(res['W1'][1], hT_ref):.1e}{flag}")
+    print("== 分段调用:W=1(T1) 末状态作为 W=1(T2) 的 h0,对比一次 baseline(T1+T2) 与 fp64 ==")
+    for lb in (-1.0, -0.1):
+        B, H, T1, T2 = 1, 4, 2048, 2048
+        q, k, v, g, beta, A_log, dt_bias, h0 = make_inputs(B, T1 + T2, H)
+        out_ref = torch.zeros_like(v); hT_ref = torch.zeros_like(h0)
+        baseline(q, k, v, g, beta, A_log, dt_bias, h0, scale, lb, out_ref, hT_ref)
+        c = lambda x: x.contiguous()
+        out = torch.zeros_like(v)
+        S1 = mk(B, T1, H, 32, lb, 1).run(c(q[:, :T1]), c(k[:, :T1]), c(v[:, :T1]), c(g[:, :T1]), c(beta[:, :T1]), A_log, dt_bias, h0, scale, out[:, :T1])
+        o1 = out[:, :T1].clone(); o2 = torch.zeros(B, T2, H, D, device="cuda", dtype=torch.bfloat16)
+        S2 = mk(B, T2, H, 32, lb, 1).run(c(q[:, T1:]), c(k[:, T1:]), c(v[:, T1:]), c(g[:, T1:]), c(beta[:, T1:]), A_log, dt_bias, S1.contiguous(), scale, o2)
+        o_cat = torch.cat([o1, o2], 1)
+        gd = lambda x: x.double()
+        g_act = lb * torch.sigmoid(torch.exp(gd(A_log)).view(1, 1, H, 1) * (gd(g) + gd(dt_bias).view(1, 1, H, D)))
+        o64, S64 = naive_recurrent_kda(gd(q), gd(k), gd(v), g_act, torch.sigmoid(gd(beta)), scale,
+                                       initial_state=gd(h0).transpose(-1, -2).contiguous(), output_final_state=True)
+        S64 = S64.transpose(-1, -2)
+        print(f"  lb={lb}: out seg(W1) vs base {rr(o_cat, out_ref):.2e}, vs fp64 {rr(o_cat, o64):.2e} (base vs fp64 {rr(out_ref, o64):.2e}) | "
+              f"hT seg(W1) vs base {rr(S2, hT_ref):.2e}, vs fp64 {rr(S2, S64):.2e} (base vs fp64 {rr(hT_ref, S64):.2e})")
+    print("== 逐位一致性:lb=-5(模型真实门控),B=2 H=12 T=8192 G=32/64,W=1 vs 原版 ==")
+    for G in (32, 64):
+        B, T, H = 2, 8192, 12
+        q, k, v, g, beta, A_log, dt_bias, h0 = make_inputs(B, T, H)
+        out_ref = torch.zeros_like(v); hT_ref = torch.zeros_like(h0)
+        baseline(q, k, v, g, beta, A_log, dt_bias, h0, scale, -5.0, out_ref, hT_ref)
+        o = torch.zeros_like(v); S = mk(B, T, H, G, -5.0, 1).run(q, k, v, g, beta, A_log, dt_bias, h0, scale, o); torch.cuda.synchronize()
+        print(f"  G={G}: out 不同元素数 {(o != out_ref).sum().item()} / {o.numel()}, hT 不同元素数 {(S != hT_ref).sum().item()} / {S.numel()}")
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "check"
     if mode == "check":
@@ -326,6 +389,8 @@ if __name__ == "__main__":
                     check(B, T, H, G, lb=lb, p2=p2)
     elif mode == "precision":
         precision_sweep()
+    elif mode == "precision_lb":
+        precision_lookback()
     elif mode == "bench":
         Gs = [32, 64]
         for (B, T, H) in [(1, 8192, 12), (1, 32768, 12), (1, 65536, 16), (1, 16384, 32)]:
