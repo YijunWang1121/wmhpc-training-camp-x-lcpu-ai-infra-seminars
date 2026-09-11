@@ -433,6 +433,68 @@ K2 换成 CUTLASS 而不是手写 PTX,会不会把 0.62× 翻成正收益?——
 没利用上)是两类不同的问题——M4 的差距是**工程质量差距**,CUTLASS 能补;K2 的差距是**算法结构性的**,
 换任何库都补不了,能救的只有 §7 末尾"要真的赢需要什么"里列的那几条算法/数值改动。
 
+### 7.2 profile 归因:tcgen05 版 K2 到底慢在哪,哪些能改,改完能到哪
+
+数据来源:`profiles/ncu_k2tc2.{txt,csv}`(T=8192,H=96,两个 kernel 同一作业)、§7 的 v3 分相 stamp(1095 MHz,
+cycle/chunk)、E10 的共驻扫描。
+
+**(1) 两个 kernel 的 ncu 对照——问题不在 tensor pipe,在线程侧和占用率。**
+
+| 指标 | mma.sync K2(FlashKDA) | tcgen05 K2(k2_tc2 v3) |
+|--|--:|--:|
+| Duration(T=8192,H=96) | 1.29 ms | 2.09 ms |
+| tensor 指令数 | 20.4 M | **0.54 M**(−97%) |
+| 线程指令数(`smsp__inst_executed`) | 174 M | **193 M**(+11%) |
+| smem wavefronts / bank conflicts | 79 M / 10.6 M | 57 M / 5.2 M |
+| 寄存器/线程 | 73 | **242** |
+| 线程数/CTA → warp/调度器 | 192 → 1.5 | 128 → **1.0** |
+| Block limit(寄存器 / smem) | 4 / 2 | **2** / 2 |
+| No-Eligible / Issued warp per scheduler | 67% / 0.33 | **77% / 0.23** |
+| stall 构成(cycle/issue,占比) | wait 24%,selected 22%,short_scoreboard 16%,sleeping 15%,long_scoreboard 10% | selected 23%,wait 22%,short_scoreboard 20%,**barrier 11%**,**no_instruction 10%**,long_scoreboard 10% |
+
+换指令把 tensor 指令砍掉 97%,但**线程指令反而多了 11%**——被砍掉的 HMMA 是"免费"藏在 4 个 warp 的 fragment 流水
+里的,替换它们的是 TMEM 回读、bf16 打包、swizzle 地址计算、smem RMW 这些标量指令;而执行这些指令的只有 4 个 warp
+(每调度器 1 个),任何固定延迟都裸露(No-Eligible 77%)。
+
+**(2) 每 chunk 4460 cycle 的去向(v3 分相,§7)与对应的 stall 机制:**
+
+| 相 | cycle | 占比 | 机制(profile 证据) | 能不能改 |
+|--|--:|--:|--|--|
+| E4 状态更新 `S^T = bf16(S^T·g + kU^T)` | **1835** | 41% | 每线程一整行:`r[128]` 常驻 128 个寄存器(→242 regs),8 次 tcgen05.ld(128×128 回读 446)+ 16 次 LDS.128 + 32 次 LDS.128 读 g + 128 FFMA + 64 F2FP + 16 STS.128,全部在 1 warp/调度器下串行暴露(wait + short_scoreboard 共 42%);指令数 ≈350/线程/chunk,按 IPC=1 只要 ~350 cycle,实际 5× | **能**:状态常驻 TMEM 当 G1 的 A 操作数(tcgen05.mma 允许 A 来自 TMEM),更新变成 tcgen05.ld×2 → FFMA → tcgen05.st,去掉 32 KB smem RMW、swizzle 地址计算和 `fence.proxy.async`;线程数 128→256 让每线程只管半行(r[64],寄存器 ~130,warp/调度器 2)。预计 1835 → ~500 |
+| G1 发射(8 条 K16,单线程) | 525 | 12% | 每条 ~65 cycle 的发射代价,ISA 决定(§7.1) | **不能**:K=128 至少 8 条;只能靠与上一 chunk 的 E3 重叠(已做) |
+| E1 `u=(v−u)β` | 434 | 10% | TMEM 回读 139 + 16 次 2 B 标量 LDS 读 v + 16 次 MUFU(sigmoid)+ INTER 布局写 + fence + sync | **部分能**:sigmoid(β) 在 K1 算好(−60);v 用 LDS.128;uT 若也放 TMEM(G2 的 A 可来自 TMEM)省掉 fence+sync(−100)。预计 → ~250 |
+| INV/Mqk 重排 + sync + 发射 | 310 | 7% | K1 写的是 row-major,kernel 里 32 线程重排成 INTER 再 sync | **能**:让 K1 直接写 INTER(或 TMA 3-D box 直接落 INTER),整段消失(−250) |
+| G2'/G3 往返、G2 往返 | 253 + 193 | 10% | issue→commit→mbarrier 固定延迟(§3.2 microbench 265/条) | **不能**:真依赖 |
+| E3 out tile(与 G1 重叠后剩余) | 224 | 5% | TMEM 回读 + 打包 + 写 staging | 部分能(重叠更多) |
+| 4 次 `__syncthreads` + TMA 等待 | ~300 | 7% | barrier stall 11%:4 个 warp 每相都要对齐;no_instruction 10%:全展开的 r[128] 循环把代码撑大,I-cache miss(FlashKDA 这一项为 0) | 部分能:减少展开、合并相位(INV 重排消失后少一次 sync) |
+
+**(2b) SASS 级 stall 采样(`profiles/ncu_k2tc2_src.ncu-rep`,`--section SourceCounters`,T=8192 H=12,6477 个采样):**
+
+| stall 落在 | 占比 | 对应 |
+|--|--:|--|
+| FFMA 20.4% + F2FP 5.5% + IMAD 8.2% + LOP3 3.2% + LDS 4.8% + STS 3.1% | **≈45%** | E4 的 `S·g + kU` 链:最热的单条指令是 `FFMA R144, R208, R237, R116`(5.3%),它等的是 S(LDS)、g(LDS)、kU(LDTM)三路输入;IMAD/LOP3 是 swizzle 地址计算 |
+| BRA / @P BRA / BRA.U(`mbarrier.try_wait` 轮询循环) | **≈30%** | 等 MMA commit / TMA 落地:4 个 warp 一起在 `mbar_wait` 里转,这就是 §7 说的 3 次往返 + TMA 等待,ISA 决定的地板 |
+| BAR + BSYNC | ≈4% | 每 chunk 4 次 `__syncthreads` |
+| LDTM(tcgen05.ld 本身) | 1.2% | TMEM 回读不是问题,问题在等它的消费者 |
+
+两块合起来 75%:一块(45%)是线程侧算术在 1 warp/调度器下裸露延迟——**可改**;另一块(30%)是异步 MMA 的往返等待——
+**不可改**。这和 stamp 分相、以及 §7 "删光线程侧只剩 2030" 的地板实验三方互相印证。
+
+**(3) 改完能到哪(纸面,按上表逐项扣):** 4460 − E4 1335 − INV 250 − E1 180 − E3/sync ~150 ≈ **2550 cycle/chunk**,
+对 mma.sync 的 2732 是 **≈1.07×**——也就是**全部可改的项都改到位,tcgen05 版最多和 mma.sync 打平**。原因是 §7 的
+地板实验:把线程侧工作全部删掉,异步 MMA 链 + TMA + 同步本身就是 2030 cycle,占 mma.sync 全部时间的 74%;线程侧
+无论怎么优化都只能在剩下的 26% 里做文章。这个上限估计还没算 TMEM 预算的代价:状态常驻 TMEM(64 列)+ G1 32 +
+G2/G2' 32 + G3 128 + 双缓冲 64 = 320 列 > 256,会把共驻从 2 CTA/SM 压到 1(E10:共驻 1→2 值 1.6×);要保 2 个
+CTA 就得把 G3 拆成两个 N=64 半程(多一次往返 ≈ +250)。
+
+**(4) E10 补充的一层:** 在分层扫描造出来的"多短链共驻"regime 里,tcgen05 版从 0.63× 升到 0.75×,说明它的
+等待型 stall 确实可以被共驻 CTA 填,但两种指令都被 smem/TMEM 卡在 2 CTA/SM,填不满(issue slot 35%)。
+
+**结论:** tcgen05 版慢的直接原因是**线程侧工作变多(+11% 指令)且只有 1 warp/调度器来执行**——E4 的 smem RMW
+(41%)是最大的单项,可以用"状态常驻 TMEM + 256 线程"砍掉约 3/4;INV 重排、E1 的标量路径、I-cache 也各有一两百
+cycle 可省。但把这些全做完,上限也只是和 mma.sync 打平(≈1.07×),因为 tcgen05 链本身的固定往返(2030)已经占了
+mma.sync 总时间的 74%。这与 §8 "v2 不出 sm100a 专版"一致;能在 K2 上真正赢的仍然是 §3.3.2 的分层扫描和 smem 减负。
+
 ## 8. 综合结论(讨论点 6):v2 不出 sm100a 专版
 
 **峰值侧论据(支持出专版)**:tcgen05 在 N=128 时 4088 MAC/cycle/SM,是 mma.sync 的 4.0×;K2 的 P1 是 tensor 发射 bound(610 cycle);

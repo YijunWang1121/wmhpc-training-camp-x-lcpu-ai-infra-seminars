@@ -1,0 +1,45 @@
+[2763114] python3.12@127.0.0.1
+  void <unnamed>::k2_tc2_kernel<0>(CUtensorMap_st, CUtensorMap_st, CUtensorMap_st, <unnamed>::Params) (12, 1, 1)x(128, 1, 1), Context 1, Stream 7, Device 0, CC 10.3
+    Section: Warp State Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Warp Cycles Per Issued Instruction             cycle         4.40
+    Warp Cycles Per Executed Instruction           cycle         4.40
+    Avg. Active Threads Per Warp                                29.09
+    Avg. Not Predicated Off Threads Per Warp                    28.86
+    ---------------------------------------- ----------- ------------
+
+    Section: Instruction Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Avg. Executed Instructions Per Scheduler        inst     40760.25
+    Executed Instructions                           inst     24130068
+    Avg. Issued Instructions Per Scheduler          inst     40760.29
+    Issued Instructions                             inst     24130092
+    ---------------------------------------- ----------- ------------
+
+    OPT   Est. Local Speedup: 15.38%                                                                                    
+          This kernel executes 3538944 fused and 1572864 non-fused FP32 instructions. By converting pairs of non-fused  
+          instructions to their fused (https://docs.nvidia.com/cuda/floating-point/#cuda-and-floating-point),           
+          higher-throughput equivalent, the achieved FP32 performance could be increased by up to 15% (relative to its  
+          current performance).                                                                                         
+
+    Section: Source Counters
+    ------------------------- ----------- ------------
+    Metric Name               Metric Unit Metric Value
+    ------------------------- ----------- ------------
+    Branch Instructions Ratio           %         0.05
+    Branch Instructions              inst      1144404
+    Branch Efficiency                   %        97.53
+    Avg. Divergent Branches      branches        41.55
+    ------------------------- ----------- ------------
+
+    OPT   Est. Speedup: 0.06154%                                                                                        
+          This kernel has uncoalesced shared accesses resulting in a total of 49152 excessive wavefronts (1% of the     
+          total 6343836 wavefronts). Check the L1 Wavefronts Shared Excessive table for the primary source locations.   
+          The CUDA Best Practices Guide                                                                                 
+           (https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory-in-matrix-multiplication-c
+          -ab) has an example on optimizing shared memory accesses.                                                     
+
