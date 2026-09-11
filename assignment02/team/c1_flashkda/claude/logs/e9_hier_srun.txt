@@ -1,0 +1,87 @@
+srun: job 26226 queued and waiting for resources
+srun: job 26226 has been allocated resources
+[check B=1 T=512 H=4 G=4 NG=8 lb=-5.0]
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.726e-04 mean_abs=1.352e-05 max_rel=2.493e+01 rel_rms=5.148e-03
+  out  hier vs fp64                    max_abs=4.726e-04 mean_abs=1.352e-05 max_rel=2.493e+01 rel_rms=5.148e-03
+  hT   flash_kda vs fp64               max_abs=4.204e-03 mean_abs=9.741e-05 max_rel=8.931e+00 rel_rms=4.105e-03
+  hT   hier vs fp64                    max_abs=4.204e-03 mean_abs=9.741e-05 max_rel=8.931e+00 rel_rms=4.105e-03
+[check B=1 T=2048 H=4 G=8 NG=16 lb=-5.0]
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  out  hier vs fp64                    max_abs=4.726e-04 mean_abs=1.353e-05 max_rel=2.731e+01 rel_rms=5.220e-03
+  hT   flash_kda vs fp64               max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+  hT   hier vs fp64                    max_abs=5.146e-03 mean_abs=1.537e-04 max_rel=2.535e+00 rel_rms=4.511e-03
+[check B=2 T=1000 H=3 G=8 NG=8 lb=-5.0]
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  out  flash_kda vs fp64               max_abs=5.922e-04 mean_abs=1.380e-05 max_rel=1.238e+02 rel_rms=5.269e-03
+  out  hier vs fp64                    max_abs=5.922e-04 mean_abs=1.380e-05 max_rel=1.238e+02 rel_rms=5.269e-03
+  hT   flash_kda vs fp64               max_abs=3.922e-03 mean_abs=8.981e-05 max_rel=3.230e+01 rel_rms=4.373e-03
+  hT   hier vs fp64                    max_abs=3.922e-03 mean_abs=8.981e-05 max_rel=3.230e+01 rel_rms=4.373e-03
+[check B=1 T=8192 H=12 G=32 NG=16 lb=-5.0]
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+[check B=2 T=4096 H=8 G=16 NG=16 lb=-5.0]
+  out  hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+  hT   hier vs flash_kda               max_abs=0.000e+00 mean_abs=0.000e+00 max_rel=0.000e+00 rel_rms=0.000e+00
+
+===== B=1 T=8192 H=12  (B*H=12 CTA in baseline K2, NT=512) =====
+  baseline flash_kda.fwd(K1+K2):    785.5 us
+  G=  2 NG= 256 CTAs=  3072:   4962.8 us  speedup  0.16x  | p1a   385.9 p1b   201.8 p2 116439.2 p3   319.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  4 NG= 128 CTAs=  1536:   2640.3 us  speedup  0.30x  | p1a   233.9 p1b   146.6 p2  2265.9 p3   165.9 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  8 NG=  64 CTAs=   768:   1480.8 us  speedup  0.53x  | p1a   128.1 p1b   127.6 p2  1106.3 p3   128.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 16 NG=  32 CTAs=   384:    923.5 us  speedup  0.85x  | p1a   134.1 p1b   123.7 p2   557.3 p3   128.1 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  16 CTAs=   192:    657.7 us  speedup  1.19x  | p1a   143.1 p1b   129.1 p2   279.7 p3   128.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=8192 H=16  (B*H=16 CTA in baseline K2, NT=512) =====
+  baseline flash_kda.fwd(K1+K2):    796.9 us
+  G=  2 NG= 256 CTAs=  4096:   5268.1 us  speedup  0.15x  | p1a   381.7 p1b   251.4 p2  4535.2 p3   246.8 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  4 NG= 128 CTAs=  2048:   2801.9 us  speedup  0.28x  | p1a   184.5 p1b   181.3 p2  2268.2 p3   181.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  8 NG=  64 CTAs=  1024:   1604.7 us  speedup  0.50x  | p1a   161.9 p1b   158.5 p2  1134.9 p3   158.9 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 16 NG=  32 CTAs=   512:   1005.3 us  speedup  0.79x  | p1a   150.2 p1b   146.5 p2   567.4 p3   148.5 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  16 CTAs=   256:    691.8 us  speedup  1.15x  | p1a   148.2 p1b   141.3 p2   278.8 p3   144.4 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=32768 H=12  (B*H=12 CTA in baseline K2, NT=2048) =====
+  baseline flash_kda.fwd(K1+K2):   3073.9 us
+  G=  2 NG=1024 CTAs= 12288:  20390.4 us  speedup  0.15x  | p1a   955.7 p1b   950.2 p2 17567.9 p3   949.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  4 NG= 512 CTAs=  6144:  10472.2 us  speedup  0.29x  | p1a   561.2 p1b   559.1 p2  8801.4 p3   562.1 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  8 NG= 256 CTAs=  3072:   5686.0 us  speedup  0.54x  | p1a   428.0 p1b   429.1 p2  4403.5 p3   433.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 16 NG= 128 CTAs=  1536:   3360.8 us  speedup  0.91x  | p1a   389.1 p1b   385.3 p2  2220.2 p3   388.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  64 CTAs=   768:   2228.2 us  speedup  1.38x  | p1a   379.4 p1b   377.0 p2  1104.1 p3   376.8 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=16384 H=32  (B*H=32 CTA in baseline K2, NT=1024) =====
+  baseline flash_kda.fwd(K1+K2):   1664.3 us
+  G=  2 NG= 512 CTAs= 16384:  12808.0 us  speedup  0.13x  | p1a  1014.8 p1b  1007.6 p2 10579.7 p3  1031.5 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  4 NG= 256 CTAs=  8192:   6886.0 us  speedup  0.24x  | p1a   665.7 p1b   662.4 p2  4919.5 p3   664.7 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  8 NG= 128 CTAs=  4096:   4045.8 us  speedup  0.41x  | p1a   535.5 p1b   530.5 p2  2462.9 p3   533.5 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 16 NG=  64 CTAs=  2048:   2659.8 us  speedup  0.63x  | p1a   477.3 p1b   477.3 p2  1233.0 p3   478.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  32 CTAs=  1024:   2016.3 us  speedup  0.83x  | p1a   466.9 p1b   463.1 p2   621.5 p3   469.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=65536 H=16  (B*H=16 CTA in baseline K2, NT=4096) =====
+  baseline flash_kda.fwd(K1+K2):   6217.7 us
+  G=  2 NG=2048 CTAs= 32768:  46026.0 us  speedup  0.14x  | p1a  3491.9 p1b  3280.6 p2 36212.0 p3  3279.9 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  4 NG=1024 CTAs= 16384:  23070.6 us  speedup  0.27x  | p1a  1647.7 p1b  1647.6 p2 18102.5 p3  1649.7 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  8 NG= 512 CTAs=  8192:  12510.7 us  speedup  0.50x  | p1a  1144.9 p1b  1141.9 p2  9060.6 p3  1143.6 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 16 NG= 256 CTAs=  4096:   7478.6 us  speedup  0.83x  | p1a   974.8 p1b   974.8 p2  4532.4 p3   974.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG= 128 CTAs=  2048:   4965.0 us  speedup  1.25x  | p1a   905.4 p1b   897.0 p2  2270.4 p3   900.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=4 T=8192 H=16  (B*H=64 CTA in baseline K2, NT=512) =====
+  baseline flash_kda.fwd(K1+K2):    939.7 us
+  G=  2 NG= 256 CTAs= 16384:  13943.6 us  speedup  0.07x  | p1a  1239.3 p1b  1235.7 p2 10250.4 p3  1238.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  4 NG= 128 CTAs=  8192:   7300.1 us  speedup  0.13x  | p1a   731.1 p1b   731.2 p2  5115.1 p3   732.1 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  8 NG=  64 CTAs=  4096:   4248.3 us  speedup  0.22x  | p1a   556.8 p1b   553.1 p2  2555.0 p3   560.1 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 16 NG=  32 CTAs=  2048:   2735.2 us  speedup  0.34x  | p1a   491.6 p1b   491.6 p2  1270.9 p3   494.6 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  16 CTAs=  1024:   2032.4 us  speedup  0.46x  | p1a   473.1 p1b   471.2 p2   628.9 p3   474.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+
+===== B=1 T=8192 H=96  (B*H=96 CTA in baseline K2, NT=512) =====
+  baseline flash_kda.fwd(K1+K2):   1030.5 us
+  G=  2 NG= 256 CTAs= 24576:  12126.5 us  speedup  0.08x  | p1a  1274.8 p1b  1272.9 p2  8307.9 p3  1272.8 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  4 NG= 128 CTAs= 12288:   6905.7 us  speedup  0.15x  | p1a   921.6 p1b   916.4 p2  4161.8 p3   918.4 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G=  8 NG=  64 CTAs=  6144:   4328.9 us  speedup  0.24x  | p1a   753.7 p1b   751.6 p2  2077.8 p3   750.6 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 16 NG=  32 CTAs=  3072:   3113.3 us  speedup  0.33x  | p1a   694.3 p1b   692.2 p2  1040.5 p3   691.2 us  | out max_abs 0.00e+00 mean 0.00e+00
+  G= 32 NG=  16 CTAs=  1536:   2570.1 us  speedup  0.40x  | p1a   688.1 p1b   682.0 p2   521.4 p3   685.0 us  | out max_abs 0.00e+00 mean 0.00e+00
+     20 2032
+      1 345

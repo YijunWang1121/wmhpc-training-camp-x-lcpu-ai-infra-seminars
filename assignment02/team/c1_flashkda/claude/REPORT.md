@@ -14,7 +14,7 @@ job 24819/24904 全程 2032 MHz**(`logs/clock_<job>.csv`),因此跨作业比较�
 | 讨论点 4 | K2 既非算力(SM 20%,tensor pipe 30%)也非带宽(DRAM 19%)bound,是**单 CTA 串行延迟链**:No-Eligible 68%,每调度器 1.5 warp,smem 是最忙部件(61%)。消融:P1 610 + P6 770 + P3/4 347 + 流水线/同步 800 + 其余 230。K1 相反,是吞吐型(L2 72%,DRAM 59%,issue 71%)。 |
 | 讨论点 1 | CHUNK=32 时**先破的是数值范围**:lb=−5 下 benchmark 分布 15.7% 的 k_d 下溢、14.6% 的 k_inv 上溢,L 直接 nan;C=64 时 57%。Neumann 与 MMA 形状在 C=32 都不破(fp16 求逆误差 2e-6 不随 C 变;寄存器 ~112)。但范围问题只需把 cumsum 的参考点移到 chunk 中点(零成本),见 §3.1。 |
 | 讨论点 2 | tcgen05 M 最小 64,CHUNK=16 当 M 不合法;**把 D=128 当 M、CHUNK 当 N/K** 则 5 个 GEMM 全部合法。但 microbench:N=16 的指令只有 653 MAC/cycle/SM(比 mma.sync 峰值 1020 还低),N≥128 才 4088;一次 issue→commit→wait 固定 ≈265 cycle,TMEM 回读 128×16 要 139 cycle。纸面 ≈2900 cycle/chunk;实测(§7)只换指令 = **0.62×**,把线程侧工作全删掉的地板也只有 1.34×。 |
-| 讨论点 3 | 候选:V-split(fla 就是 BV=32/64)、多 head/CTA、persistent、2-CTA。**只有缩短单 chunk 链才能帮 TP8 长序列**;V-split 只压缩吞吐型的 ~40%,多 head/CTA 只提高 SM 利用率不减时延,persistent 只对 varlen 负载均衡有用。 |
+| 讨论点 3 | 候选:V-split(fla 就是 BV=32/64)、多 head/CTA、persistent、2-CTA。**只有缩短单 chunk 链才能帮 TP8 长序列**;V-split 只压缩吞吐型的 ~40%,多 head/CTA 只提高 SM 利用率不减时延,persistent 只对 varlen 负载均衡有用。追问(§3.3.1):链本身能不能拆(不是绕开)?数学上**能**——状态递推代入化简后是仿射矩阵递推 `S_i=M_i S_{i-1}+N_i`,可结合律重组成分块前缀扫描,深度 512→~50;**做出来并实测了(E8)**:正确(对 flash_kda 5.5e-3,同 §2.4 量级),但性能 TP8 **0.30×**、H=96 **0.04×**、T=32768 **0.33×**,全部大幅落败;归因是每次 compose 是 128³ 稠密 GEMM、总算力 16×,而 128³ tile 在 B300 上 cuBLAS 只能到峰值的 4%(batch 192)~17%,按天花板计费的下界(H=12 仅 compose 就 1062 us ≈ K2 的 0.82×)也赢不了。FLA 自己的生产 kernel 也是纯串行,现在知道为什么了。**但换一种拆法就赢了(§3.3.2,E9):不 compose,用 K2 自己的 varlen + initial_state 探测每组的 (A_g, B_g),组间 NG 步前缀,再并行回放——B·H≤16 的长序列上 1.9~2.5×(SM Active 8%→76%),误差与基线同量级;B·H≥64 输 0.5×,需按 B·H 门控。** |
 | 讨论点 5 | 用 fp64 递推做金标准、fla fp32 状态做对照:flash_kda 的 hT 误差是 Triton 的 1.9–2.3×(4.5e-3 vs 2.4e-3),**不随 T 增长**(512→16384 平),弱衰减(gate→0)时 7.4e-3 vs 4.2e-3;bf16/fp32 状态 I/O 分段调用逐位相同。 |
 | 挑战 | 写了 tcgen05 版 K2(`exp/k2tc/k2_tc2.cu`,消费原 workspace,TMA + SW128 + 双缓冲 TMEM 累加器),**与 FlashKDA 逐位一致**(out/hT rel 0.0),三轮 profile 驱动的迭代从 0.31× 到 **0.62×**;消融:去掉状态更新 = 1.02×,去掉全部线程侧 epilogue = 1.34×(异步 MMA 链的地板 2030 cycle)。**没有正收益**,原因量化在 §7。追问"换 CUTLASS 而不是手写会不会翻盘"——从 CUTLASS 4.7.0 源码验证不会(§7.1):单线程发射是 tcgen05 的 ISA 约束、K2 的 chunk 间递推是真数据依赖,两者都不是"代码写得不够专业"能解释的,换库无效。 |
 | 讨论点 6 | **v2 不出 sm100a 专版**:算术峰值不是瓶颈(tensor pipe 30%),换指令后每 chunk 3 次 MMA 往返 + 4 次 TMEM 回读的固定延迟 ≈ 1800 cycle 抵掉了 4× 的峰值;真正的杠杆是架构无关的——CHUNK=32 + 中点重标定(纸面 K2 −30%)、去掉 800 cycle 的流水线同步开销、V-split 提高 TP8 下的 SM 利用率。 |
@@ -128,6 +128,169 @@ microbench(每个配置先对 CPU 参考 PASS):
 | 2-CTA(cluster/multicast) | 与 V-split 组合:两 CTA 各持一半 V,k_d/q_d/INV 用 TMA multicast 只读一次 | 只省 L2 流量,不省时延;cta_group::2 的 tcgen05 也没改变链的依赖结构 |
 
 对 TP8 长序列(12 CTA,K2 1.28 ms)唯一有效的是**缩短单 chunk 链**(去同步开销、大 CHUNK)加 V-split。
+
+#### 3.3.1 追问:512 步的串行依赖链,能不能把链本身拆开(而不是绕开)?
+
+上面四个方案都是"绕开"(换更多独立 CTA 去掩盖延迟),没有一个动"chunk 间必须严格串行"这个前提本身。
+从 `fla_kda_ref/naive.py`(`naive_chunk_kda`,160-163 行)把递推代入化简一遍,发现**这个前提其实不成立
+——chunk 间状态递推本质是一个可以结合律重组的仿射矩阵递推,原则上能从 O(NT) 深度压到 O(log NT)。**
+
+**推导(记号照抄 naive.py 第 160-163 行)。** 每个 chunk 的状态更新是:
+
+```
+v_i = u_i - w_i @ S              # S: [K,V] 是上一 chunk 传入的状态
+S'  = diag(exp(g_i[-1])) @ S + K_i'^T @ v_i     # K_i' = exp(g_i[-1]-g_i) * k_i, 形状 [BT,K]
+```
+
+把 `v_i` 代进去展开:
+
+```
+S' = diag(exp(g_i[-1])) @ S + K_i'^T @ (u_i - w_i @ S)
+   = (diag(exp(g_i[-1])) - K_i'^T @ w_i) @ S + K_i'^T @ u_i
+   =                 M_i                @ S +      N_i
+```
+
+即 `S_i = M_i @ S_{i-1} + N_i`,一个标准的一阶仿射矩阵递推,其中 **`M_i`(K×K = 128×128)和 `N_i`(K×V =
+128×128)只用本 chunk 自己的 `k_i, w_i, u_i, g_i`就能算出来,完全不需要 `S`**——`w_i`、`u_i` 本来就是 K1
+里已经算好的、chunk 之间互相独立的量(fla 论文里的 WY 表示,FlashKDA 对应 §7 表格里的 G2/G2' 之前那部分)。
+额外要付的代价只是显式形成 `M_i`:一次 `K_i'^T @ w_i`([128,16]@[16,128]),形状和现有 P6 的
+128×16×128 GEMM 完全同型,单价不贵,而且和其余 chunk 的 `M_i`、`N_i` 计算**互相独立、可以对全部 512 个
+chunk 一次性并行算完**(这一步可以直接塞进现在的 K1)。注意 `K_i'^T @ w_i` 的秩 ≤ BT=16 ≪ K=128,
+`M_i` 是"对角 + 秩 16"结构(DPLR,和 S4/SSM 文献里的参数化是同一类结构),这一点在下面估算代价时有用。
+
+**递推可以结合律重组。** 定义算子 `(M_a,N_a) ⊕ (M_b,N_b) = (M_b@M_a, M_b@N_a+N_b)`(表示"先套用 a 再套用
+b"这个仿射变换的复合),这个算子满足结合律(仿射变换的复合本来就满足结合律)。于是给定全部 512 个
+`(M_i,N_i)`,可以用标准的 Blelloch(work-efficient)前缀扫描,在 `2×log2(512)=18` 轮**依赖**运算内,
+并行算出全部 512 个 `S_i`——而不是现在这样必须严格排队 512 步。§7.1 反驳"CUTLASS 能不能救 K2"时说的
+"K2 没有可以流水的独立工作项"这句话,准确地说应该是"**在当前算法写法下**没有独立工作项";换一种数学上
+等价的写法(仿射递推 ⇒ 结合律 ⇒ 扫描),独立工作项是能造出来的。
+
+**但代价不是零,且赢面强依赖并发场景,以下都是纸面估算,没有上机验证:**
+
+- **总算力代价**:现在的串行写法从不显式生成 `M_i`(直接用 `w_i@S` 这种 [16,128]@[128,128] 的矮阵去乘 S,
+  代价 ∝ K×V,不是 K×K×K);扫描版必须先把每个 `M_i` 显式材料化成 128×128 矩阵,扫描本身的每次
+  `⊕` 又是两条 128×128×128 的 GEMM(`M_b@M_a` 和 `M_b@N_a`)。Blelloch 上扫+下扫总共 ≈2×(512−1)≈1022
+  次 `⊕`,每次 ≈8.4 MFLOP,扫描阶段总计 ≈8.6 GFLOP/(seq,head)——是现在这部分工作(≈537 MFLOP,按 §1
+  851,968 MAC/chunk 里状态相关那一半估)的 **≈16×**。深度换总量:这笔账在"算力有富余、缺的是延迟隐藏"
+  的场景才划算(K2 恰好是,tensor pipe 只 30% 忙,§3.4),在算力已经吃紧的场景(高并发 serving,SM 本来
+  就被其他请求占满)反而是纯负担。
+- **实际能拿到多少深度收益,取决于有多少空闲 SM 可以横向摊开扫描的每一轮。** 扫描第 r 轮理论上有多达
+  NT/2 个互相独立的 `⊕` 可以同时做,但一次只能塞进"当前空闲的 SM 数"个。TP8 长序列(报告优先场景)只有
+  12 个 CTA 在跑,其余 136 个 SM 空闲,每个 head 平均能借到 ≈136/12≈11 个空闲 SM——扫描 1022 次
+  `⊕` 除以 11 路并行 ≈93 "波",每波按现有 microbench 的 M128N128K128 issue→commit→wait 往返
+  (§3.2,≈752 cycle)估,93×752≈70,000 cycle ≈ 64 us(1095 MHz)——vs 现在整条链 1.28 ms,**理论上限
+  ≈20×**。但如果 GPU 上同时有更多请求在跑(高并发 serving,SM 本来就被占满,没有 136 个空闲 SM 可借),
+  这个数字会跌回接近 1×(扫描的深度优势没有硬件去兑现,总算力代价的 16× 反而净亏)。
+- **工程量不小,且没有先例。** 直接读了 FLA 自己的生产 Triton kernel
+  (`fla/ops/common/chunk_delta_h.py:166`,`chunk_kda_fwd` 最终调用的就是它),状态递推同样是一个
+  `for i_t in range(NT): ...` 的**纯串行循环**,没有任何扫描结构——写这篇论文("Parallelizing Linear
+  Transformers with the Delta Rule over Sequence Length")、维护这个库的团队自己都没有在生产 kernel 里
+  用扫描版本。这不代表扫描版本理论上不成立(上面的推导是对的),更可能的原因是:(a) 常见的高并发 serving
+  场景本来就有大把独立 CTA 可用,扫描省的那点深度买不起 16× 的总算力代价;(b) 扫描版本要写一个"多轮
+  grid-wide 同步 + 128×128 矩阵 combine"的新 kernel,比现在的单 CTA 循环复杂得多,轮次间的同步开销
+  (grid sync 或多次 kernel launch)本身也要占用这条本来就短的关键路径,上面的 64us 估算完全没有计入这部分
+  开销,实际很可能吃掉相当一部分理论收益。
+
+**实现与实测(E8,`exp/e8_scan.py`,`logs/e8_scan_srun.txt` / `logs/e8_bench2_srun.txt`,job 26190/26199,
+全程 1095 MHz,与 flash_kda 同一进程同一会话)。** 按 TASK 第三层"并行度重构"这条路线真的把它做了出来:
+PyTorch/cuBLAS 实现,`build_MN`(全部 chunk 一次性批量算 `M_i`、`N_i`)→ 两级分块扫描(level-1 组内 batched
+compose、level-2 组间传播、level-3 batched apply)→ 输出阶段(v_i、o_i 全 chunk batched);另写了去掉 torch 层面
+低效的 v2(连续 batch、`baddbmm`、预分配 out=)。
+
+- **正确性**:fp64 下扫描版与"同样 M/N 但 NT 步串行"逐位一致(rel 0~2e-17),对 `naive_chunk_kda`/
+  `naive_recurrent_kda` 2e-7(参照内部是 fp32);bf16 全链对 flash_kda 的 o/S 误差 5.5e-3/4.4e-3,与 §2.4 里
+  flash_kda 自己对 fp64 参照的误差(5e-3/4.5e-3)同量级——**扫描重排本身没有引入额外误差**。
+- **性能:全线落败,而且不是实现粗糙的问题。**
+
+| T / H | flash_kda K2 | 扫描 v2(仅 compose) | build_MN + 输出 | 扫描链合计 | 结果 |
+|--|--:|--:|--:|--:|--:|
+| 8192 / 12(TP8) | 1289 us | 2604 us(29 TFLOP/s 有效) | 555 + 1111 | 4270 us | **0.30×** |
+| 8192 / 96 | 1303 us | 17255 us(35 TFLOP/s) | 4202 + 8519 | 29975 us | **0.04×** |
+| 32768 / 12 | 5132 us | 9304 us(33 TFLOP/s) | 2145 + 4285 | 15733 us | **0.33×** |
+
+  CUDA graph 与 eager 只差 3-7%(`logs/e8_scan_srun.txt`),排除 launch 开销;v2 比 v1 只快 5%,排除 torch 切片/
+  拷贝开销。真正的原因是同一会话里单独测出来的 **128³ batched GEMM 天花板**(`exp/e8_gemm_ceiling.py`,
+  `logs/e8_gemm_ceiling_srun.txt`):cuBLAS bf16 bmm 128³ 在 batch=192(H=12 时 level-1 的 batch)只有
+  **72 TFLOP/s**,batch≥768 也只到 **226-295 TFLOP/s**——同一进程里 4096³ 单条 GEMM 是 1706 TFLOP/s。
+  每条 compose 是 M=N=K=128 的 GEMM,每个 CTA 只做一个 128×128 tile、K 维只有 8 个 k-step,正是 assignment
+  4.5 的 `f_b_proj`(K=128)那一行和 §3.2 小 N tcgen05 指令"按条计费"同一种病:tile 太小、K 太短,摊不掉
+  发射与流水线建立成本。
+- **就算实现到天花板也赢不了。** 把扫描里每一条 GEMM 都按各自 batch 的 cuBLAS 天花板计费,得到的下界是:
+  H=12 **1062 us**、H=96 2707 us、T=32768/H=12 1333 us——H=12 时仅 compose 一项就已经 ≈ 整个 K2 的 0.82×,
+  而 flash_kda 的 K2 里还包含了 build_MN 对应的 P6 和输出阶段对应的 P1/P3/P4。也就是说纸面估算错在
+  "16× 的额外算力能被空闲 SM 以接近峰值吸收"这一步:H=12 时总共只有 12×512 = 6144 个 128×128 矩阵,
+  扫描树每一层的 batch 只有 12~192,把 148 个 SM 摊薄到每个 SM 一两个 128³ tile,效率只剩峰值的 4%;
+  H=96 时 batch 够大、效率上来了,但总算力 612 GFLOP 又远超 K2 在 1.3 ms 里能做的事。两头都堵死。
+
+**结论:依赖链本身在数学上是可拆的(仿射递推 ⇒ 可结合 ⇒ 可扫描),而且做出来了、正确性也对——这是本报告
+之前没发现的一条真实存在的并行度来源,不是"绕开"而是"拆开";但实测在 TP8(0.30×)、满头(0.04×)、长上下文
+(0.33×)三个场景全部大幅慢于 flash_kda,天花板下界也证明它在 K=V=128 这个状态规模下不可能赢:每次 compose
+是 128³ 的稠密 GEMM,总算力 16×,而这种 tile 在 B300 上最多只能跑到峰值的 4%~17%。要让扫描路线成立,需要
+的是**换算法或换形状**——利用 `M_i` 的"对角 + 秩 16"结构做低秩 compose 而不是稠密 128³(但 32 个 chunk
+一组的秩会累加到 512,分块深度受限),或者 head_dim=64 把 compose 单价砍 8×——不是再优化实现。这条路线
+的结论与 §3.4/§7/§7.1 一致:K2 现在不是算力瓶颈,而所有"用更多算力换更浅依赖"的方案在这个状态规模下都
+买不起。
+
+#### 3.3.2 Design B:分层扫描(不显式 compose)——推导、代价模型与原型(E9)
+
+**§3.3.1 的 E8 为什么输,换个角度看:** 它把每个 chunk 的仿射变换 `(M_i, N_i)` 都材料化成稠密 128×128,再用
+128³ 的 GEMM 去复合。真正的问题不是"扫描"这个思想,而是 **compose 的形式**。把结构写清楚:
+
+- 单 chunk:`M_i = D_i − U_i Wᵢᵀ`,`D_i = diag(exp(g_i[−1]))`,`U_i = K_i'ᵀ`(128×16),`W_i = w_iᵀ`(128×16)——
+  "对角 + 秩 ≤ 16"(DPLR),这是 delta rule / WY 表示直接给的结构;`N_i = U_i u_i`(128×128,但由 128×16 × 16×128 生成)。
+- 两个 chunk 复合 `T_2∘T_1`:
+  ```
+  A = M_2 M_1 = D_2D_1 − D_2U_1W_1ᵀ − U_2W_2ᵀD_1 + U_2(W_2ᵀU_1)W_1ᵀ
+              = D_2D_1 − [D_2U_1 | U_2] · [W_1ᵀ ; W_2ᵀD_1 − (W_2ᵀU_1)W_1ᵀ]        (对角 + 秩 ≤ 32)
+  B = M_2 N_1 + N_2
+  ```
+  复合保持"对角 + 低秩"形式,但**秩每复合一个 chunk 增加 16**:G 个 chunk 复合后秩 ≤ 16G,G ≥ 8 时秩顶到 128
+  ——等于稠密。所以"保持低秩结构做全树扫描"(Design A 的结构化版本)只在树的最底下 2-3 层有意义,再往上就退化
+  成 E8 那种 128³ 稠密 compose;Design A 的代价模型因此不成立(E8 已实测:16× 算力、天花板下界也赢不了)。
+- **Design B 的关键:组摘要不用 compose 就能拿到。** 递推对 S 线性,一组 G 个 chunk 的复合 `T_g(S) = A_g S + B_g`
+  可以用"探测"得到:`B_g = T_g(0)`(从零状态跑一遍这组 chunk 的末状态),`A_g = T_g(I) − B_g`,而令 `v = 0`
+  时 `u = 0 ⇒ N_i = 0 ⇒ T_g(I)|_{v=0} = A_g`。也就是说 **A_g 由 K2 自己的低秩 chunk 更新一步步累出来,每步仍是
+  `w_i@S`(16×128×128)和 `K'ᵀv`(128×16×128),没有任何 128³ 的 GEMM**;稠密 128³ 只出现在组间前缀
+  `S_in[g+1] = A_g S_in[g] + B_g`,总共 NG−1 次(NG = NT/G,几十次,不是 E8 的 3×NT = 1536 次)。
+- **Design C**(状态无关预处理 + 最小串行传播):FlashKDA 的 K1 就是这个拆分——w、u、INV、Mqk、Aqk 全部与 S 无关,
+  K2 里剩下的 `w_i@S`、状态更新、`q@S` 才是串行部分;这条线已经做到头,再往下只能靠 B 去拆 K2 本身。
+
+**零 CUDA 改动的最小可行原型(`exp/e9_hier.py`)。** FlashKDA 的 K2 天然支持 varlen(`cu_seqlens`)和每序列
+`initial_state`。把一条 T 的序列切成 NG 个组当成 NG 条虚拟序列:
+
+| phase | 做什么 | 调用 | 并行 CTA | 依赖深度 |
+|--|--|--|--:|--:|
+| 1a | `B_g` = 各组从零状态跑到末尾的 `final_state` | `flash_kda.fwd(cu_seqlens=组界, initial_state=0)` | B·H·NG | G |
+| 1b | `A_g` = 各组 v=0、初始状态 = I 的 `final_state` | `flash_kda.fwd(v=0, initial_state=I)` | B·H·NG | G |
+| 2 | `S_in[g+1] = S_in[g]·A_g + B_g`(fp32 baddbmm,状态按 [V,K] 布局右乘) | NG−1 次 bmm | B·H | NG |
+| 3 | 回放:各组从正确入口状态跑,得到输出与末状态 | `flash_kda.fwd(initial_state=S_in)` | B·H·NG | G |
+
+代价模型(每 (b,h),T=8192,NT=512,G=32,NG=16):算力 ≈ 3× K2(phase 1a/1b/3 各走一遍全部 chunk)+ 16 条 128³
+(0.07 GFLOP,可忽略);临时显存 `A_g,B_g,S_in` = 3·NG·H·32 KB(H=12 时 18 MB);kernel 数 3 次 fwd + NG−1 次
+bmm;依赖深度从 512 降到 2·32 + 16 = 80。**预期**:baseline K2 时间与 B·H 无关(单 CTA 链 1.28 ms),分层版三个
+fwd 的链长各 G/NT = 1/16,只要 B·H·NG 个 CTA 摊得开(≤ 148 SM × 2 CTA/SM),wall ≈ 3 × 1.28/16 + phase 2
+≈ 0.24 ms + phase 2;B·H 大到本来就铺满 SM 时,3× 的算力就是净亏。数值口径:与基线完全相同的 kernel、bf16 状态,
+只在组边界多两次 bf16 舍入(A_g、S_in),这是唯一的精度差异来源,需要实测。
+
+**实测(E9,`exp/e9_hier.py`,`logs/e9b_hier_srun.txt`、`logs/e9c_hier_srun.txt`,1095 MHz,50 次迭代)——完整交付
+见 `K2_HIER.md`。** 正确性:弱衰减(lb=−0.1/−0.01,组间携带 2%~70% 的状态)下与基线差异在 bf16 舍入量级
+(out rel_rms 1.6e-3~6e-3),且对 fp64 真值的误差与基线相同(如 5.949e-3 vs 5.946e-3);T 不整除 G、多 batch、
+多 head 都测过。性能(v3:1a/1b 合并成一次 2H-head 调用 + bf16 phase 2 + CUDA graph):
+
+| B·H | T | baseline | hier(最优 G) | 加速 | SM Active(ncu) |
+|--:|--:|--:|--:|--:|--|
+| 12 | 8192 | 1366 us | 710 us(G=32) | **1.92×** | 8% → 76% |
+| 12 | 32768 | 5385 us | 2151 us(G=64) | **2.50×** | |
+| 16 | 65536 | 10863 us | 5072 us(G=64) | **2.14×** | |
+| 32 | 16384 | 2909 us | 2484 us(G=64) | 1.17× | |
+| 64 | 8192 | 1626 us | 2527 us | 0.64× | |
+| 96 | 8192 | 1774 us | 3545 us | 0.50× | |
+
+ncu 说明了赢和输的同一个原因:分层版的 recurrence kernel 在单 SM 内和基线**完全一样**(73 寄存器、98 KB smem、
+No-Eligible 65% vs 67%、每调度器 2.0 vs 1.5 个 warp),变的只是 grid 从 12 到 192、整卡 SM Active 从 8% 到 76%
+——基线是 parallelism-bound,不是链本身能被压短;B·H ≥ 64 时没有空闲 SM 可用,3× 算力就是净亏。这是本报告
+里**第一条对 TP8 长序列有正收益的路线**,而且和指令集无关(还没碰 tcgen05)。剩余开销:phase 1 含两遍 K1
+(可省)、phase 2 的 NG 步 launch(可写成一个 kernel),纸面还能到 ~2.7×,见 `K2_HIER.md` §10。
 
 ### 3.4 compute-bound 还是 memory-bound(`profiles/ncu_fixed.txt`,`logs/e4_ablate_24844.txt`)
 
@@ -286,7 +449,14 @@ TMEM 累加器省寄存器,TMA + SW128 与现有 GMMA 布局兼容,workspace 零
    与 HBM 带宽无关(DRAM 19%)。
 3. **V-split(BV=64/32)**:对 TP8(12 CTA / 148 SM)把 CTA 数 ×2–4,压缩 P1 发射与 P6 流量(≈40% 的吞吐型部分),预期 1.25–1.4×;
    fla 的 Triton 就这么做。
-4. 若一定要上 SM100:先做上面三条再谈;"只换指令"本身是负收益。
+4. **分层扫描(§3.3.2,E9 已实现并实测):做,且排在 V-split 前面——它是唯一实测对 TP8 长序列有正收益的路线**
+   (1.92× @T=8192、2.50× @T=32768,零 CUDA 改动即可拿到;K1 只算一遍 + phase 2 单 kernel 后纸面 ~2.7×),
+   条件是按 B·H 门控(≤32 启用)。详见 `K2_HIER.md`。
+5. **全树扫描(§3.3.1,E8 已实现并实测):不做。** 数学成立、实现正确,但 TP8 0.30×、H=96 0.04×、
+   长上下文 0.33×,天花板下界也赢不了(H=12 仅 compose 就 ≈ K2 的 0.82×)。根因是 128³ 稠密 compose 的
+   16× 总算力在 B300 上只能以峰值 4%~17% 的效率执行;只有换成利用"对角+秩 16"结构的低秩 compose 或
+   head_dim=64 才有翻盘可能,那是算法改动,不在 K2 优化范围内。
+6. 若一定要上 SM100:先做上面五条再谈;"只换指令"本身是负收益。
 
 ## 附加观察(K1、varlen、fp32 状态 I/O)
 
@@ -308,4 +478,10 @@ cd team/c1_flashkda/claude && sbatch -G 1 --time=00:30:00 -o logs/e1_%j.out exp/
 sbatch -G 1 --time=00:55:00 -o logs/e2_%j.out exp/job_e2.sh                                    # E6/E5/E2/E4
 sbatch -G 1 --time=00:20:00 -o logs/e7d_%j.out exp/job_e7d.sh                                  # E7 tcgen05 K2 正确性/计时/ncu
 sbatch -G 1 --time=00:15:00 -o logs/e7e_%j.out exp/job_e7e.sh                                  # E7 消融(地板)
+
+# E8(§3.3.1 扫描版,直接 srun 占卡,不走 sbatch):
+# PYTHONPATH=$C1 $PY exp/e8_scan.py check                 # 登录节点 CPU 也能跑:fp64 对拍 naive
+# srun -G 1 --time=00:30:00 bash -c 'PYTHONPATH=$C1 $PY exp/e8_scan.py bench'    # -> logs/e8_scan_srun.txt
+# srun -G 1 --time=00:20:00 bash -c 'PYTHONPATH=$C1 $PY exp/e8_scan.py bench2'   # -> logs/e8_bench2_srun.txt(含天花板/v1/v2)
+# srun -G 1 --time=00:10:00 bash -c '$PY exp/e8_gemm_ceiling.py'                  # -> logs/e8_gemm_ceiling_srun.txt
 ```

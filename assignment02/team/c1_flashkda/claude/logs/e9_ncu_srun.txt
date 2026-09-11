@@ -1,0 +1,68 @@
+srun: job 26240 queued and waiting for resources
+srun: job 26240 has been allocated resources
+==WARNING== Note: Running with unmodified GPU clocks. If not controlled otherwise, profiling results may be inconsistent.
+done
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<Sc
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %         7.97
+    SM Frequency                    Ghz         1.09
+    Memory Throughput                 %         4.73
+    Duration                         ms         1.29
+    Compute (SM) Throughput           %         2.62
+    Issued Warp Per Scheduler                        0.33
+    No Eligible                            %        67.11
+    Active Warps Per Scheduler          warp         1.50
+    Eligible Warps Per Scheduler        warp         0.35
+    Grid Size                                                     12
+    Registers Per Thread             register/thread              73
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Waves Per SM                                                0.04
+    Achieved Occupancy                        %         9.36
+    Achieved Active Warps Per SM           warp         5.99
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<Sc
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %        75.96
+    SM Frequency                    Ghz         1.05
+    Memory Throughput                 %        46.97
+    Duration                         us          132
+    Compute (SM) Throughput           %        26.37
+    Issued Warp Per Scheduler                        0.35
+    No Eligible                            %        65.01
+    Active Warps Per Scheduler          warp         2.02
+    Eligible Warps Per Scheduler        warp         0.43
+    Grid Size                                                    192
+    Registers Per Thread             register/thread              73
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Waves Per SM                                                0.65
+    Achieved Occupancy                        %        12.55
+    Achieved Active Warps Per SM           warp         8.03
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<Sc
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %        75.61
+    SM Frequency                    Ghz         1.08
+    Memory Throughput                 %        46.80
+    Duration                         us       129.15
+    Compute (SM) Throughput           %        26.28
+    Issued Warp Per Scheduler                        0.35
+    No Eligible                            %        64.95
+    Active Warps Per Scheduler          warp         2.03
+    Eligible Warps Per Scheduler        warp         0.43
+    Grid Size                                                    192
+    Registers Per Thread             register/thread              73
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Waves Per SM                                                0.65
+    Achieved Occupancy                        %        12.58
+    Achieved Active Warps Per SM           warp         8.05
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<Sc
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %        76.38
+    SM Frequency                    Ghz         1.06
+    Memory Throughput                 %        47.21
+    Duration                         us       132.16
+    Compute (SM) Throughput           %        26.51
+    Issued Warp Per Scheduler                        0.35
+    No Eligible                            %        64.94
+    Active Warps Per Scheduler          warp         2.03
+    Eligible Warps Per Scheduler        warp         0.43
+    Grid Size                                                    192
+    Registers Per Thread             register/thread              73
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Waves Per SM                                                0.65
+    Achieved Occupancy                        %        12.54
+    Achieved Active Warps Per SM           warp         8.03

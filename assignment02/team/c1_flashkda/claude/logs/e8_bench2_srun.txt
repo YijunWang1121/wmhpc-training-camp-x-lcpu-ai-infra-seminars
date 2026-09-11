@@ -1,0 +1,30 @@
+srun: job 26199 queued and waiting for resources
+srun: job 26199 has been allocated resources
+
+===== T=8192 H=12 NT=512 G=32 NG=16 level-1 batch R=192 =====
+  flash_kda K2                     1288.8 us
+  bmm 128^3 x192 ceiling              11.2 us     72.0 TFLOP/s
+  scan v1                          2764.0 us     27.7 TFLOP/s effective (18228 GEMMs, 76.5 GFLOP)
+  scan v2                          2604.1 us     29.4 TFLOP/s effective
+  scan at ceiling (lower bound)    1061.9 us
+  build_MN 555.2 us, out 1111.0 us; v2 total 4270.3 us  -> K2/v2total = 0.30x
+    scan v2 vs v1 (S_final)                    max_abs=0.000e+00 rel_rms=0.000e+00
+
+===== T=8192 H=96 NT=512 G=32 NG=16 level-1 batch R=1536 =====
+  flash_kda K2                     1303.1 us
+  bmm 128^3 x1536 ceiling              28.5 us    225.9 TFLOP/s
+  scan v1                         18068.6 us     33.9 TFLOP/s effective (145824 GEMMs, 611.6 GFLOP)
+  scan v2                         17254.7 us     35.4 TFLOP/s effective
+  scan at ceiling (lower bound)    2707.3 us
+  build_MN 4201.6 us, out 8518.8 us; v2 total 29975.1 us  -> K2/v2total = 0.04x
+    scan v2 vs v1 (S_final)                    max_abs=0.000e+00 rel_rms=0.000e+00
+
+===== T=32768 H=12 NT=2048 G=32 NG=64 level-1 batch R=768 =====
+  flash_kda K2                     5131.8 us
+  bmm 128^3 x768 ceiling              14.0 us    229.6 TFLOP/s
+  scan v1                          9750.3 us     31.4 TFLOP/s effective (72948 GEMMs, 306.0 GFLOP)
+  scan v2                          9303.5 us     32.9 TFLOP/s effective
+  scan at ceiling (lower bound)    1332.7 us
+  build_MN 2145.2 us, out 4284.7 us; v2 total 15733.4 us  -> K2/v2total = 0.33x
+    scan v2 vs v1 (S_final)                    max_abs=0.000e+00 rel_rms=0.000e+00
+     16 1095

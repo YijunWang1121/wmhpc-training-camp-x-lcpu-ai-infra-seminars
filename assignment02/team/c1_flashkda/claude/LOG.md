@@ -34,3 +34,33 @@
   结合归约"设计的,K2 的 chunk 间递推(第 N+1 个 chunk 的 G1 依赖第 N 个 chunk 更新完的状态)是真数据
   依赖,没有 CUTLASS 深流水线能利用的独立工作项。结论写进 REPORT §7.1:不推翻讨论点 6,补一条论据——
   K2 的瓶颈是 ISA 约束+算法递推,不是代码工程质量,换库救不了(M4 的 GEMM 差距是工程质量差距,K2 不是)。
+- 追问(用户直接指定):§3.3 说"链本身有没有办法拆,不只是绕开"——读 `fla_kda_ref/naive.py` 第 160-163
+  行的 `naive_chunk_kda` 状态更新,把 `v_i = u_i - w_i@S` 代入 `S' = diag(exp(g_i[-1]))@S + K_i'^T@v_i`
+  化简,发现是标准仿射矩阵递推 `S_i = M_i@S_{i-1} + N_i`,`M_i`(K×K,对角+秩≤BT=16)、`N_i`(K×V)只用
+  本 chunk 自己的量就能算,不需要 `S`——可以结合律重组成 Blelloch 前缀扫描,深度 O(NT)→O(log NT)=18。
+  纸面代价:扫描要多付 ≈16× 总算力(≈8.6 GFLOP vs ≈537 MFLOP/(seq,head)),深度收益上限 ≈20× 只在
+  "空闲 SM≫并发 head 数"(TP8 长序列)的场景成立;查了 `/tmp/flashkda-b300-venv` 里 fla 0.5.2 自己的
+  生产 Triton kernel(`fla/ops/common/chunk_delta_h.py:166`,`chunk_kda_fwd` 实际调的就是它)确认状态
+  递推也是纯 `for i_t in range(NT)` 串行循环,没人在生产里做过扫描版本。写进 REPORT §3.3.1,是没有实现
+  /上机验证过的纸面推导,下一步该做的是先 microbench "多 CTA 矩阵 combine + grid sync" 往返延迟。
+- E8(用户指定"实现并验证"§3.3.1;按用户要求全程 `srun` 占卡跑,不用 sbatch):`exp/e8_scan.py` 把递推改成
+  两级分块扫描(build_MN → level-1 组内 batched compose → level-2 组间传播 → level-3 batched apply → 输出)。
+  CPU fp64 对拍:扫描 vs 自己的串行 M/N 版逐位一致(rel 0~2e-17),vs naive(内部 fp32)2e-7。
+  GPU(job 26190,`logs/e8_scan_srun.txt`,flash_kda K2 = 1288 us 与 1095 MHz 的历史数字一致):扫描版对
+  flash_kda 的 o/S 误差 5.5e-3/4.4e-3(与 §2.4 flash_kda 对 fp64 的误差同量级,正确);但计时全线落败:
+  T=8192 H=12 bf16+CUDA graph 4566 us = K2 的 3.5×,H=96 32969 us = 25×,T=32768 H=12 17195 us = 3.4×;
+  graph ≈ eager,说明不是 47 次 launch 的问题,是 128^3 batched GEMM 本身效率极低。`exp/e8_gemm_ceiling.py`
+  单独测 cuBLAS bmm 128^3 的吞吐上限做归因(`logs/e8_gemm_ceiling_srun.txt`)。
+- E8b(job 26196/26199,`logs/e8_gemm_ceiling_srun.txt`、`logs/e8_bench2_srun.txt`,采样时钟全程 1095 MHz):
+  同会话测 cuBLAS bmm 128³ 天花板(bf16:batch 192 → 72 TFLOP/s,batch 768/1536 → 230/226,batch 12288 → 295;
+  对照 4096³ 单条 1706),扫描 v2(连续 batch + baddbmm + 预分配)只比 v1 快 5%,有效吞吐 29-35 TFLOP/s;
+  按天花板计费的下界 H=12 1062 us(≈K2 0.82×,仅 compose)。结论:扫描路线在 K=V=128 下不可能赢,写进
+  REPORT §3.3.1 实测段、速览表、§8 第 4 条。挑战按 TASK "做不出正收益也算完成"口径关闭。
+- E9(用户 brief:算法层拆依赖链优先于 Blackwell 特化;Design B 分层扫描):`exp/e9_hier.py`,零 CUDA 改动——
+  用 FlashKDA K2 的 varlen + 每序列 initial_state,把长序列切成 NG 组:phase 1 探测组摘要 (B_g = 从 0 跑的末状态,
+  A_g = v=0、S_in=I 跑的末状态),phase 2 组间 NG 步前缀(bf16 baddbmm,graph),phase 3 并行回放。
+  job 26226/26232/26239(1095 MHz):正确性在弱衰减(lb=-0.1/-0.01)下与基线差 bf16 量级,对 fp64 误差与基线相同;
+  性能 v1(fp32 phase 2)1.42×/1.99×,v3(bf16 phase 2 + graph + 1a/1b 合并成 2H-head 调用)B·H=12:1.92×(T=8K)、
+  2.50×(T=32K);B·H=16/T=64K 2.14×;B·H=32 1.17×;B·H=64/96 0.5~0.64×。ncu(job 26240,`profiles/ncu_e9`):
+  同一 kernel,grid 12→192,SM Active 8%→76%,单 SM 指标不变。交付文档 `K2_HIER.md`;REPORT §3.3.2、§0、§8 更新。
+  CuTe 地板 kernel `exp/k2cute/k2_cute_floor.cu` 已写未编译,按 brief 顺序搁置到算法层收益确认之后。

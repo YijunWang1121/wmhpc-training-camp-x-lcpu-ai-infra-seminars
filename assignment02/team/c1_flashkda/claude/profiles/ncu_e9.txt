@@ -1,0 +1,469 @@
+[2627246] python3.12@127.0.0.1
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<512>, AuxTmaParams<tuple<ScaledBasis<C<1>, 0>>, const Layout<tuple<C<32>>, tuple<ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<C<32>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<32>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<4096>, AuxTmaParams<tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<128>, C<1>>, tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, float>, Layout<tuple<C<1>, tuple<tuple<C<128>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<1>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, 16, 128, 3, 2, 192, 1, 1, 0, 0>(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, bfloat16_t *, int, int, int, const long *, int) (1, 12, 1)x(192, 1, 1), Context 1, Stream 7, Device 0, CC 10.3
+    Section: Command line profiler metrics
+    --------------------------------------------------- ----------- ------------
+    Metric Name                                         Metric Unit Metric Value
+    --------------------------------------------------- ----------- ------------
+    gpu__time_duration.sum                                       ms         1.29
+    launch__grid_size                                                         12
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %         7.97
+    sm__warps_active.avg.pct_of_peak_sustained_active             %         9.36
+    --------------------------------------------------- ----------- ------------
+
+    Section: GPU Speed Of Light Throughput
+    ----------------------- ----------- ------------
+    Metric Name             Metric Unit Metric Value
+    ----------------------- ----------- ------------
+    DRAM Frequency                  Ghz         4.00
+    SM Frequency                    Ghz         1.09
+    Elapsed Cycles                cycle      1408582
+    Memory Throughput                 %         4.73
+    DRAM Throughput                   %         1.24
+    Duration                         ms         1.29
+    L1/TEX Cache Throughput           %        59.34
+    L2 Cache Throughput               %         2.55
+    SM Active Cycles              cycle    111920.78
+    Compute (SM) Throughput           %         2.62
+    ----------------------- ----------- ------------
+
+    OPT   This kernel grid is too small to fill the available resources on this device, resulting in only 0.0 full      
+          waves across all SMs. Look at Launch Statistics for more details.                                             
+
+    Section: Scheduler Statistics
+    ---------------------------- ----------- ------------
+    Metric Name                  Metric Unit Metric Value
+    ---------------------------- ----------- ------------
+    One or More Eligible                   %        32.89
+    Issued Warp Per Scheduler                        0.33
+    No Eligible                            %        67.11
+    Active Warps Per Scheduler          warp         1.50
+    Eligible Warps Per Scheduler        warp         0.35
+    ---------------------------- ----------- ------------
+
+    OPT   Est. Local Speedup: 67.11%                                                                                    
+          Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
+          issues an instruction every 3.0 cycles. This might leave hardware resources underutilized and may lead to     
+          less optimal performance. Out of the maximum of 16 warps per scheduler, this workload allocates an average    
+          of 1.50 active warps per scheduler, but only an average of 0.35 warps were eligible per cycle. Eligible       
+          warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no      
+          eligible warp results in no instruction being issued and the issue slot remains unused. To increase the       
+          number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons    
+          on the Warp State Statistics and Source Counters sections.                                                    
+
+    Section: Warp State Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Warp Cycles Per Issued Instruction             cycle         4.56
+    Warp Cycles Per Executed Instruction           cycle         4.57
+    Avg. Active Threads Per Warp                                27.38
+    Avg. Not Predicated Off Threads Per Warp                    27.16
+    ---------------------------------------- ----------- ------------
+
+    WRN   The optional metric smsp__pcsamp_sample_count could not be found. Collecting it as an additional metric could 
+          enable the rule to provide more guidance.                                                                     
+
+    Section: Launch Statistics
+    -------------------------------- --------------- ---------------
+    Metric Name                          Metric Unit    Metric Value
+    -------------------------------- --------------- ---------------
+    Block Size                                                   192
+    Cluster Scheduling Policy                           PolicySpread
+    Cluster Size                                                   0
+    Function Cache Configuration                     CachePreferNone
+    Grid Size                                                     12
+    Preferred Cluster Size                                         0
+    Registers Per Thread             register/thread              73
+    Shared Memory Configuration Size           Kbyte          200.70
+    Driver Shared Memory Per Block       Kbyte/block            1.02
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Static Shared Memory Per Block        byte/block               0
+    # SMs                                         SM             148
+    Stack Size                                                  1024
+    Threads                                   thread            2304
+    # TPCs                                                        74
+    Enabled TPC IDs                                              all
+    Uses Green Context                                             0
+    Waves Per SM                                                0.04
+    -------------------------------- --------------- ---------------
+
+    OPT   Est. Speedup: 91.89%                                                                                          
+          The grid for this launch is configured to execute only 12 blocks, which is less than the GPU's 148            
+          multiprocessors. This can underutilize some multiprocessors. If you do not intend to execute this kernel      
+          concurrently with other workloads, consider reducing the block size to have at least one block per            
+          multiprocessor or increase the size of the grid to fully utilize the available hardware resources. See the    
+          Hardware Model (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-hw-model)            
+          description for more details on launch configurations.                                                        
+
+    Section: Occupancy
+    ------------------------------- ----------- ------------
+    Metric Name                     Metric Unit Metric Value
+    ------------------------------- ----------- ------------
+    Max Active Clusters                 cluster            0
+    Max Cluster Size                      block            8
+    Overall GPU Occupancy                     %            0
+    Cluster Occupancy                         %            0
+    Block Limit Barriers                  block            7
+    Block Limit SM                        block           32
+    Block Limit Registers                 block            4
+    Block Limit Shared Mem                block            2
+    Block Limit Warps                     block           10
+    Theoretical Active Warps per SM        warp           12
+    Theoretical Occupancy                     %        18.75
+    Achieved Occupancy                        %         9.36
+    Achieved Active Warps Per SM           warp         5.99
+    ------------------------------- ----------- ------------
+
+    OPT   Est. Speedup: 67.11%                                                                                          
+          The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the       
+          hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the required amount of      
+          shared memory.                                                                                                
+
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<512>, AuxTmaParams<tuple<ScaledBasis<C<1>, 0>>, const Layout<tuple<C<32>>, tuple<ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<C<32>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<32>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<4096>, AuxTmaParams<tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<128>, C<1>>, tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, float>, Layout<tuple<C<1>, tuple<tuple<C<128>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<1>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, 16, 128, 3, 2, 192, 1, 1, 0, 1>(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, bfloat16_t *, int, int, int, const long *, int) (16, 12, 1)x(192, 1, 1), Context 1, Stream 7, Device 0, CC 10.3
+    Section: Command line profiler metrics
+    --------------------------------------------------- ----------- ------------
+    Metric Name                                         Metric Unit Metric Value
+    --------------------------------------------------- ----------- ------------
+    gpu__time_duration.sum                                       us          132
+    launch__grid_size                                                        192
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %        75.96
+    sm__warps_active.avg.pct_of_peak_sustained_active             %        12.55
+    --------------------------------------------------- ----------- ------------
+
+    Section: GPU Speed Of Light Throughput
+    ----------------------- ----------- ------------
+    Metric Name             Metric Unit Metric Value
+    ----------------------- ----------- ------------
+    DRAM Frequency                  Ghz         3.99
+    SM Frequency                    Ghz         1.05
+    Elapsed Cycles                cycle       141095
+    Memory Throughput                 %        46.97
+    DRAM Throughput                   %        12.61
+    Duration                         us          132
+    L1/TEX Cache Throughput           %        61.84
+    L2 Cache Throughput               %        27.86
+    SM Active Cycles              cycle    106711.13
+    Compute (SM) Throughput           %        26.37
+    ----------------------- ----------- ------------
+
+    OPT   This kernel grid is too small to fill the available resources on this device, resulting in only 0.6 full      
+          waves across all SMs. Look at Launch Statistics for more details.                                             
+
+    Section: Scheduler Statistics
+    ---------------------------- ----------- ------------
+    Metric Name                  Metric Unit Metric Value
+    ---------------------------- ----------- ------------
+    One or More Eligible                   %        34.99
+    Issued Warp Per Scheduler                        0.35
+    No Eligible                            %        65.01
+    Active Warps Per Scheduler          warp         2.02
+    Eligible Warps Per Scheduler        warp         0.43
+    ---------------------------- ----------- ------------
+
+    OPT   Est. Local Speedup: 53.03%                                                                                    
+          Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
+          issues an instruction every 2.9 cycles. This might leave hardware resources underutilized and may lead to     
+          less optimal performance. Out of the maximum of 16 warps per scheduler, this workload allocates an average    
+          of 2.02 active warps per scheduler, but only an average of 0.43 warps were eligible per cycle. Eligible       
+          warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no      
+          eligible warp results in no instruction being issued and the issue slot remains unused. To increase the       
+          number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons    
+          on the Warp State Statistics and Source Counters sections.                                                    
+
+    Section: Warp State Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Warp Cycles Per Issued Instruction             cycle         5.78
+    Warp Cycles Per Executed Instruction           cycle         5.79
+    Avg. Active Threads Per Warp                                27.47
+    Avg. Not Predicated Off Threads Per Warp                    27.23
+    ---------------------------------------- ----------- ------------
+
+    WRN   The optional metric smsp__pcsamp_sample_count could not be found. Collecting it as an additional metric could 
+          enable the rule to provide more guidance.                                                                     
+
+    Section: Launch Statistics
+    -------------------------------- --------------- ---------------
+    Metric Name                          Metric Unit    Metric Value
+    -------------------------------- --------------- ---------------
+    Block Size                                                   192
+    Cluster Scheduling Policy                           PolicySpread
+    Cluster Size                                                   0
+    Function Cache Configuration                     CachePreferNone
+    Grid Size                                                    192
+    Preferred Cluster Size                                         0
+    Registers Per Thread             register/thread              73
+    Shared Memory Configuration Size           Kbyte          200.70
+    Driver Shared Memory Per Block       Kbyte/block            1.02
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Static Shared Memory Per Block        byte/block               0
+    # SMs                                         SM             148
+    Stack Size                                                  1024
+    Threads                                   thread           36864
+    # TPCs                                                        74
+    Enabled TPC IDs                                              all
+    Uses Green Context                                             0
+    Waves Per SM                                                0.65
+    -------------------------------- --------------- ---------------
+
+    OPT   If you execute __syncthreads() to synchronize the threads of a block, it is recommended to have at least two  
+          blocks per multiprocessor (compared to the currently executed 1.3 blocks) This way, blocks that aren't        
+          waiting for __syncthreads() can keep the hardware busy.                                                       
+
+    Section: Occupancy
+    ------------------------------- ----------- ------------
+    Metric Name                     Metric Unit Metric Value
+    ------------------------------- ----------- ------------
+    Max Active Clusters                 cluster            0
+    Max Cluster Size                      block            8
+    Overall GPU Occupancy                     %            0
+    Cluster Occupancy                         %            0
+    Block Limit Barriers                  block            7
+    Block Limit SM                        block           32
+    Block Limit Registers                 block            4
+    Block Limit Shared Mem                block            2
+    Block Limit Warps                     block           10
+    Theoretical Active Warps per SM        warp           12
+    Theoretical Occupancy                     %        18.75
+    Achieved Occupancy                        %        12.55
+    Achieved Active Warps Per SM           warp         8.03
+    ------------------------------- ----------- ------------
+
+    OPT   Est. Speedup: 53.03%                                                                                          
+          The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the       
+          hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the required amount of      
+          shared memory.                                                                                                
+
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<512>, AuxTmaParams<tuple<ScaledBasis<C<1>, 0>>, const Layout<tuple<C<32>>, tuple<ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<C<32>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<32>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<4096>, AuxTmaParams<tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<128>, C<1>>, tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, float>, Layout<tuple<C<1>, tuple<tuple<C<128>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<1>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, 16, 128, 3, 2, 192, 1, 1, 0, 1>(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, bfloat16_t *, int, int, int, const long *, int) (16, 12, 1)x(192, 1, 1), Context 1, Stream 7, Device 0, CC 10.3
+    Section: Command line profiler metrics
+    --------------------------------------------------- ----------- ------------
+    Metric Name                                         Metric Unit Metric Value
+    --------------------------------------------------- ----------- ------------
+    gpu__time_duration.sum                                       us       129.15
+    launch__grid_size                                                        192
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %        75.61
+    sm__warps_active.avg.pct_of_peak_sustained_active             %        12.58
+    --------------------------------------------------- ----------- ------------
+
+    Section: GPU Speed Of Light Throughput
+    ----------------------- ----------- ------------
+    Metric Name             Metric Unit Metric Value
+    ----------------------- ----------- ------------
+    DRAM Frequency                  Ghz         3.99
+    SM Frequency                    Ghz         1.08
+    Elapsed Cycles                cycle       140221
+    Memory Throughput                 %        46.80
+    DRAM Throughput                   %        12.87
+    Duration                         us       129.15
+    L1/TEX Cache Throughput           %        61.90
+    L2 Cache Throughput               %        28.23
+    SM Active Cycles              cycle    106588.42
+    Compute (SM) Throughput           %        26.28
+    ----------------------- ----------- ------------
+
+    OPT   This kernel grid is too small to fill the available resources on this device, resulting in only 0.6 full      
+          waves across all SMs. Look at Launch Statistics for more details.                                             
+
+    Section: Scheduler Statistics
+    ---------------------------- ----------- ------------
+    Metric Name                  Metric Unit Metric Value
+    ---------------------------- ----------- ------------
+    One or More Eligible                   %        35.05
+    Issued Warp Per Scheduler                        0.35
+    No Eligible                            %        64.95
+    Active Warps Per Scheduler          warp         2.03
+    Eligible Warps Per Scheduler        warp         0.43
+    ---------------------------- ----------- ------------
+
+    OPT   Est. Local Speedup: 53.2%                                                                                     
+          Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
+          issues an instruction every 2.9 cycles. This might leave hardware resources underutilized and may lead to     
+          less optimal performance. Out of the maximum of 16 warps per scheduler, this workload allocates an average    
+          of 2.03 active warps per scheduler, but only an average of 0.43 warps were eligible per cycle. Eligible       
+          warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no      
+          eligible warp results in no instruction being issued and the issue slot remains unused. To increase the       
+          number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons    
+          on the Warp State Statistics and Source Counters sections.                                                    
+
+    Section: Warp State Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Warp Cycles Per Issued Instruction             cycle         5.79
+    Warp Cycles Per Executed Instruction           cycle         5.80
+    Avg. Active Threads Per Warp                                27.47
+    Avg. Not Predicated Off Threads Per Warp                    27.23
+    ---------------------------------------- ----------- ------------
+
+    WRN   The optional metric smsp__pcsamp_sample_count could not be found. Collecting it as an additional metric could 
+          enable the rule to provide more guidance.                                                                     
+
+    Section: Launch Statistics
+    -------------------------------- --------------- ---------------
+    Metric Name                          Metric Unit    Metric Value
+    -------------------------------- --------------- ---------------
+    Block Size                                                   192
+    Cluster Scheduling Policy                           PolicySpread
+    Cluster Size                                                   0
+    Function Cache Configuration                     CachePreferNone
+    Grid Size                                                    192
+    Preferred Cluster Size                                         0
+    Registers Per Thread             register/thread              73
+    Shared Memory Configuration Size           Kbyte          200.70
+    Driver Shared Memory Per Block       Kbyte/block            1.02
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Static Shared Memory Per Block        byte/block               0
+    # SMs                                         SM             148
+    Stack Size                                                  1024
+    Threads                                   thread           36864
+    # TPCs                                                        74
+    Enabled TPC IDs                                              all
+    Uses Green Context                                             0
+    Waves Per SM                                                0.65
+    -------------------------------- --------------- ---------------
+
+    OPT   If you execute __syncthreads() to synchronize the threads of a block, it is recommended to have at least two  
+          blocks per multiprocessor (compared to the currently executed 1.3 blocks) This way, blocks that aren't        
+          waiting for __syncthreads() can keep the hardware busy.                                                       
+
+    Section: Occupancy
+    ------------------------------- ----------- ------------
+    Metric Name                     Metric Unit Metric Value
+    ------------------------------- ----------- ------------
+    Max Active Clusters                 cluster            0
+    Max Cluster Size                      block            8
+    Overall GPU Occupancy                     %            0
+    Cluster Occupancy                         %            0
+    Block Limit Barriers                  block            7
+    Block Limit SM                        block           32
+    Block Limit Registers                 block            4
+    Block Limit Shared Mem                block            2
+    Block Limit Warps                     block           10
+    Theoretical Active Warps per SM        warp           12
+    Theoretical Occupancy                     %        18.75
+    Achieved Occupancy                        %        12.58
+    Achieved Active Warps Per SM           warp         8.05
+    ------------------------------- ----------- ------------
+
+    OPT   Est. Speedup: 53.2%                                                                                           
+          The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the       
+          hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the required amount of      
+          shared memory.                                                                                                
+
+  void _flash_kda_fwd_recurrence<TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<512>, AuxTmaParams<tuple<ScaledBasis<C<1>, 0>>, const Layout<tuple<C<32>>, tuple<ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<C<32>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<32>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<4096>, AuxTmaParams<tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<128>, C<1>>, tuple<ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, float>, Layout<tuple<C<1>, tuple<tuple<C<128>, C<1>>>>, tuple<C<0>, tuple<tuple<C<1>, C<0>>>>>, tuple<C<1>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<2>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<16>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_LOAD, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<16384>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>, const Layout<tuple<C<8>, C<128>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<128>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<128>, C<1>>, C<1024>>>>>, tuple<C<1>, C<128>, C<128>>>, TiledCopy<Copy_Atom<Copy_Traits<SM90_TMA_STORE, C<2048>, AuxTmaParams<tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<int, 0>>, const Layout<tuple<C<8>, C<16>, C<1>>, tuple<ScaledBasis<C<1>, 2>, ScaledBasis<C<1>, 1>, ScaledBasis<C<1>, 0>>> &, const Swizzle<0, 4, 3> &>>, bfloat16_t>, Layout<tuple<C<1>, tuple<tuple<tuple<C<8>, C<16>>, C<16>>>>, tuple<C<0>, tuple<tuple<tuple<C<16>, C<1>>, C<128>>>>>, tuple<C<1>, C<16>, C<128>>>, 16, 128, 3, 2, 192, 1, 1, 0, 1>(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, bfloat16_t *, int, int, int, const long *, int) (16, 12, 1)x(192, 1, 1), Context 1, Stream 7, Device 0, CC 10.3
+    Section: Command line profiler metrics
+    --------------------------------------------------- ----------- ------------
+    Metric Name                                         Metric Unit Metric Value
+    --------------------------------------------------- ----------- ------------
+    gpu__time_duration.sum                                       us       132.16
+    launch__grid_size                                                        192
+    sm__cycles_active.avg.pct_of_peak_sustained_elapsed           %        76.38
+    sm__warps_active.avg.pct_of_peak_sustained_active             %        12.54
+    --------------------------------------------------- ----------- ------------
+
+    Section: GPU Speed Of Light Throughput
+    ----------------------- ----------- ------------
+    Metric Name             Metric Unit Metric Value
+    ----------------------- ----------- ------------
+    DRAM Frequency                  Ghz         3.99
+    SM Frequency                    Ghz         1.06
+    Elapsed Cycles                cycle       142998
+    Memory Throughput                 %        47.21
+    DRAM Throughput                   %        12.55
+    Duration                         us       132.16
+    L1/TEX Cache Throughput           %        61.81
+    L2 Cache Throughput               %        27.74
+    SM Active Cycles              cycle    106727.35
+    Compute (SM) Throughput           %        26.51
+    ----------------------- ----------- ------------
+
+    OPT   This kernel grid is too small to fill the available resources on this device, resulting in only 0.6 full      
+          waves across all SMs. Look at Launch Statistics for more details.                                             
+
+    Section: Scheduler Statistics
+    ---------------------------- ----------- ------------
+    Metric Name                  Metric Unit Metric Value
+    ---------------------------- ----------- ------------
+    One or More Eligible                   %        35.06
+    Issued Warp Per Scheduler                        0.35
+    No Eligible                            %        64.94
+    Active Warps Per Scheduler          warp         2.03
+    Eligible Warps Per Scheduler        warp         0.43
+    ---------------------------- ----------- ------------
+
+    OPT   Est. Local Speedup: 52.79%                                                                                    
+          Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
+          issues an instruction every 2.9 cycles. This might leave hardware resources underutilized and may lead to     
+          less optimal performance. Out of the maximum of 16 warps per scheduler, this workload allocates an average    
+          of 2.03 active warps per scheduler, but only an average of 0.43 warps were eligible per cycle. Eligible       
+          warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no      
+          eligible warp results in no instruction being issued and the issue slot remains unused. To increase the       
+          number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons    
+          on the Warp State Statistics and Source Counters sections.                                                    
+
+    Section: Warp State Statistics
+    ---------------------------------------- ----------- ------------
+    Metric Name                              Metric Unit Metric Value
+    ---------------------------------------- ----------- ------------
+    Warp Cycles Per Issued Instruction             cycle         5.78
+    Warp Cycles Per Executed Instruction           cycle         5.80
+    Avg. Active Threads Per Warp                                27.47
+    Avg. Not Predicated Off Threads Per Warp                    27.23
+    ---------------------------------------- ----------- ------------
+
+    WRN   The optional metric smsp__pcsamp_sample_count could not be found. Collecting it as an additional metric could 
+          enable the rule to provide more guidance.                                                                     
+
+    Section: Launch Statistics
+    -------------------------------- --------------- ---------------
+    Metric Name                          Metric Unit    Metric Value
+    -------------------------------- --------------- ---------------
+    Block Size                                                   192
+    Cluster Scheduling Policy                           PolicySpread
+    Cluster Size                                                   0
+    Function Cache Configuration                     CachePreferNone
+    Grid Size                                                    192
+    Preferred Cluster Size                                         0
+    Registers Per Thread             register/thread              73
+    Shared Memory Configuration Size           Kbyte          200.70
+    Driver Shared Memory Per Block       Kbyte/block            1.02
+    Dynamic Shared Memory Per Block      Kbyte/block           98.43
+    Static Shared Memory Per Block        byte/block               0
+    # SMs                                         SM             148
+    Stack Size                                                  1024
+    Threads                                   thread           36864
+    # TPCs                                                        74
+    Enabled TPC IDs                                              all
+    Uses Green Context                                             0
+    Waves Per SM                                                0.65
+    -------------------------------- --------------- ---------------
+
+    OPT   If you execute __syncthreads() to synchronize the threads of a block, it is recommended to have at least two  
+          blocks per multiprocessor (compared to the currently executed 1.3 blocks) This way, blocks that aren't        
+          waiting for __syncthreads() can keep the hardware busy.                                                       
+
+    Section: Occupancy
+    ------------------------------- ----------- ------------
+    Metric Name                     Metric Unit Metric Value
+    ------------------------------- ----------- ------------
+    Max Active Clusters                 cluster            0
+    Max Cluster Size                      block            8
+    Overall GPU Occupancy                     %            0
+    Cluster Occupancy                         %            0
+    Block Limit Barriers                  block            7
+    Block Limit SM                        block           32
+    Block Limit Registers                 block            4
+    Block Limit Shared Mem                block            2
+    Block Limit Warps                     block           10
+    Theoretical Active Warps per SM        warp           12
+    Theoretical Occupancy                     %        18.75
+    Achieved Occupancy                        %        12.54
+    Achieved Active Warps Per SM           warp         8.03
+    ------------------------------- ----------- ------------
+
+    OPT   Est. Speedup: 52.79%                                                                                          
+          The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the       
+          hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the required amount of      
+          shared memory.                                                                                                
+

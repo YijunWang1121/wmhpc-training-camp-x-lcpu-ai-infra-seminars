@@ -1,0 +1,118 @@
+srun: job 26190 queued and waiting for resources
+srun: job 26190 has been allocated resources
+NVIDIA B300 SXM6 AC, 1095 MHz
+[T=64 H=2 lb=-5.0 G=4] fp64
+  naive_chunk vs naive_recurrent (o)           max_abs=7.451e-09 rel_rms=2.011e-07
+  serial-MN vs naive_chunk (o)                 max_abs=6.634e-09 rel_rms=1.868e-07
+  serial-MN vs naive_recurrent (o)             max_abs=4.569e-09 rel_rms=9.866e-08
+  scan(G=4) vs serial-MN (o)                   max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=4) vs serial-MN (S_final)             max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=4) vs naive_chunk (o)                 max_abs=6.634e-09 rel_rms=1.868e-07
+  scan(G=4) vs naive_chunk (S_final)           max_abs=2.235e-07 rel_rms=3.003e-07
+  scan(G=4) vs naive_recurrent (o)             max_abs=4.569e-09 rel_rms=9.866e-08
+[T=64 H=2 lb=-1.0 G=4] fp64
+  naive_chunk vs naive_recurrent (o)           max_abs=6.519e-09 rel_rms=1.780e-07
+  serial-MN vs naive_chunk (o)                 max_abs=6.124e-09 rel_rms=1.591e-07
+  serial-MN vs naive_recurrent (o)             max_abs=4.464e-09 rel_rms=1.065e-07
+  scan(G=4) vs serial-MN (o)                   max_abs=3.469e-18 rel_rms=3.054e-17
+  scan(G=4) vs serial-MN (S_final)             max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=4) vs naive_chunk (o)                 max_abs=6.124e-09 rel_rms=1.591e-07
+  scan(G=4) vs naive_chunk (S_final)           max_abs=1.341e-07 rel_rms=2.129e-07
+  scan(G=4) vs naive_recurrent (o)             max_abs=4.464e-09 rel_rms=1.065e-07
+[T=256 H=2 lb=-5.0 G=8] fp64
+  naive_chunk vs naive_recurrent (o)           max_abs=1.024e-08 rel_rms=2.226e-07
+  serial-MN vs naive_chunk (o)                 max_abs=9.550e-09 rel_rms=2.055e-07
+  serial-MN vs naive_recurrent (o)             max_abs=4.569e-09 rel_rms=1.014e-07
+  scan(G=8) vs serial-MN (o)                   max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=8) vs serial-MN (S_final)             max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=8) vs naive_chunk (o)                 max_abs=9.550e-09 rel_rms=2.055e-07
+  scan(G=8) vs naive_chunk (S_final)           max_abs=3.427e-07 rel_rms=2.322e-07
+  scan(G=8) vs naive_recurrent (o)             max_abs=4.569e-09 rel_rms=1.014e-07
+[T=256 H=2 lb=-1.0 G=8] fp64
+  naive_chunk vs naive_recurrent (o)           max_abs=7.451e-09 rel_rms=1.831e-07
+  serial-MN vs naive_chunk (o)                 max_abs=6.945e-09 rel_rms=1.591e-07
+  serial-MN vs naive_recurrent (o)             max_abs=5.865e-09 rel_rms=1.071e-07
+  scan(G=8) vs serial-MN (o)                   max_abs=3.469e-18 rel_rms=2.928e-17
+  scan(G=8) vs serial-MN (S_final)             max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=8) vs naive_chunk (o)                 max_abs=6.945e-09 rel_rms=1.591e-07
+  scan(G=8) vs naive_chunk (S_final)           max_abs=1.192e-07 rel_rms=1.879e-07
+  scan(G=8) vs naive_recurrent (o)             max_abs=5.865e-09 rel_rms=1.071e-07
+[T=512 H=3 lb=-5.0 G=16] fp64
+  naive_chunk vs naive_recurrent (o)           max_abs=1.863e-08 rel_rms=2.270e-07
+  serial-MN vs naive_chunk (o)                 max_abs=1.708e-08 rel_rms=2.113e-07
+  serial-MN vs naive_recurrent (o)             max_abs=5.422e-09 rel_rms=9.912e-08
+  scan(G=16) vs serial-MN (o)                  max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=16) vs serial-MN (S_final)            max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=16) vs naive_chunk (o)                max_abs=1.708e-08 rel_rms=2.113e-07
+  scan(G=16) vs naive_chunk (S_final)          max_abs=2.086e-07 rel_rms=2.669e-07
+  scan(G=16) vs naive_recurrent (o)            max_abs=5.422e-09 rel_rms=9.912e-08
+[T=512 H=3 lb=-1.0 G=16] fp64
+  naive_chunk vs naive_recurrent (o)           max_abs=1.118e-08 rel_rms=1.788e-07
+  serial-MN vs naive_chunk (o)                 max_abs=8.613e-09 rel_rms=1.542e-07
+  serial-MN vs naive_recurrent (o)             max_abs=6.954e-09 rel_rms=1.049e-07
+  scan(G=16) vs serial-MN (o)                  max_abs=3.469e-18 rel_rms=1.952e-17
+  scan(G=16) vs serial-MN (S_final)            max_abs=0.000e+00 rel_rms=0.000e+00
+  scan(G=16) vs naive_chunk (o)                max_abs=8.613e-09 rel_rms=1.542e-07
+  scan(G=16) vs naive_chunk (S_final)          max_abs=1.788e-07 rel_rms=2.148e-07
+  scan(G=16) vs naive_recurrent (o)            max_abs=6.954e-09 rel_rms=1.049e-07
+E8 CHECK: PASS (scan==serial-MN to 1e-12 fp64; vs naive(fp32 internals) to 1e-5)
+
+===== T=8192 H=12 NT=512 G=32 NG=16 =====
+flash_kda: K1 67.3 us, K2 1288.1 us, total 1360.4 us
+  [fp32] build_MN   974.9  scan  6251.0  out   737.4  | eager  8311.3  graph  8000.4 us   vs flash_kda K2 1288.1 us  -> graph/K2 = 6.21x, K2/graph = 0.16x
+    [fp32] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.490e-03
+    [fp32] S_T vs flash_kda                    max_abs=5.113e-03 rel_rms=4.351e-03
+  [tf32] build_MN   748.7  scan  3515.9  out   380.6  | eager  4988.3  graph  4658.9 us   vs flash_kda K2 1288.1 us  -> graph/K2 = 3.62x, K2/graph = 0.28x
+    [tf32] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.499e-03
+    [tf32] S_T vs flash_kda                    max_abs=5.276e-03 rel_rms=4.359e-03
+  [bf16] build_MN   553.4  scan  2765.1  out  1112.2  | eager  4737.1  graph  4565.9 us   vs flash_kda K2 1288.1 us  -> graph/K2 = 3.54x, K2/graph = 0.28x
+    [bf16] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.492e-03
+    [bf16] S_T vs flash_kda                    max_abs=5.859e-03 rel_rms=4.626e-03
+
+===== T=8192 H=12 NT=512 G=16 NG=32 =====
+flash_kda: K1 67.4 us, K2 1285.6 us, total 1358.1 us
+  [fp32] build_MN   977.3  scan  6002.4  out   741.0  | eager  8068.1  graph  7752.7 us   vs flash_kda K2 1285.6 us  -> graph/K2 = 6.03x, K2/graph = 0.17x
+    [fp32] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.490e-03
+    [fp32] S_T vs flash_kda                    max_abs=5.113e-03 rel_rms=4.351e-03
+  [tf32] build_MN   747.3  scan  3417.1  out   381.2  | eager  4901.5  graph  4605.5 us   vs flash_kda K2 1285.6 us  -> graph/K2 = 3.58x, K2/graph = 0.28x
+    [tf32] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.499e-03
+    [tf32] S_T vs flash_kda                    max_abs=5.276e-03 rel_rms=4.359e-03
+  [bf16] build_MN   553.8  scan  2726.1  out  1114.8  | eager  4706.9  graph  4571.7 us   vs flash_kda K2 1285.6 us  -> graph/K2 = 3.56x, K2/graph = 0.28x
+    [bf16] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.492e-03
+    [bf16] S_T vs flash_kda                    max_abs=5.859e-03 rel_rms=4.626e-03
+
+===== T=8192 H=96 NT=512 G=32 NG=16 =====
+flash_kda: K1 459.7 us, K2 1311.2 us, total 1780.1 us
+  [fp32] build_MN  7426.2  scan 41221.9  out  5569.0  | eager 56922.3  graph 56414.9 us   vs flash_kda K2 1311.2 us  -> graph/K2 = 43.02x, K2/graph = 0.02x
+    [fp32] o   vs flash_kda                    max_abs=9.766e-04 rel_rms=5.485e-03
+    [fp32] S_T vs flash_kda                    max_abs=9.085e-03 rel_rms=4.652e-03
+  [tf32] build_MN  5543.3  scan 21753.5  out  2669.3  | eager 32718.9  graph 32184.5 us   vs flash_kda K2 1311.2 us  -> graph/K2 = 24.55x, K2/graph = 0.04x
+    [tf32] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.493e-03
+    [tf32] S_T vs flash_kda                    max_abs=8.910e-03 rel_rms=4.653e-03
+  [bf16] build_MN  4215.1  scan 18062.7  out  8520.2  | eager 33257.1  graph 32968.5 us   vs flash_kda K2 1311.2 us  -> graph/K2 = 25.14x, K2/graph = 0.04x
+    [bf16] o   vs flash_kda                    max_abs=9.766e-04 rel_rms=5.486e-03
+    [bf16] S_T vs flash_kda                    max_abs=1.172e-02 rel_rms=4.986e-03
+
+===== T=32768 H=12 NT=2048 G=64 NG=32 =====
+flash_kda: K1 238.1 us, K2 5132.1 us, total 5375.6 us
+  [fp32] build_MN  3737.8  scan 22638.5  out  2817.7  | eager 30535.7  graph 29855.0 us   vs flash_kda K2 5132.1 us  -> graph/K2 = 5.82x, K2/graph = 0.17x
+    [fp32] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.482e-03
+    [fp32] S_T vs flash_kda                    max_abs=4.373e-03 rel_rms=4.846e-03
+  [tf32] build_MN  2796.4  scan 12234.5  out  1360.8  | eager 17761.6  graph 17096.7 us   vs flash_kda K2 5132.1 us  -> graph/K2 = 3.33x, K2/graph = 0.30x
+    [tf32] o   vs flash_kda                    max_abs=9.766e-04 rel_rms=5.490e-03
+    [tf32] S_T vs flash_kda                    max_abs=4.388e-03 rel_rms=4.852e-03
+
+    [bf16] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.483e-03
+    [bf16] S_T vs flash_kda                    max_abs=5.859e-03 rel_rms=5.341e-03
+
+===== T=32768 H=12 NT=2048 G=32 NG=64 =====
+flash_kda: K1 236.5 us, K2 5133.0 us, total 5374.9 us
+  [fp32] build_MN  3735.7  scan 22247.0  out  2817.1  | eager 30178.1  graph 29584.0 us   vs flash_kda K2 5133.0 us  -> graph/K2 = 5.76x, K2/graph = 0.17x
+    [fp32] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.482e-03
+    [fp32] S_T vs flash_kda                    max_abs=4.373e-03 rel_rms=4.846e-03
+  [tf32] build_MN  2799.9  scan 11945.6  out  1358.6  | eager 17493.0  graph 16808.3 us   vs flash_kda K2 5133.0 us  -> graph/K2 = 3.27x, K2/graph = 0.31x
+    [tf32] o   vs flash_kda                    max_abs=9.766e-04 rel_rms=5.490e-03
+    [tf32] S_T vs flash_kda                    max_abs=4.388e-03 rel_rms=4.852e-03
+  [bf16] build_MN  2141.5  scan  9755.6  out  4287.2  | eager 17372.6  graph 17194.7 us   vs flash_kda K2 5133.0 us  -> graph/K2 = 3.35x, K2/graph = 0.30x
+    [bf16] o   vs flash_kda                    max_abs=7.324e-04 rel_rms=5.483e-03
+    [bf16] S_T vs flash_kda                    max_abs=5.859e-03 rel_rms=5.341e-03
